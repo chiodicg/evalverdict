@@ -6,6 +6,10 @@ import random
 from collections.abc import Iterable
 from dataclasses import dataclass
 
+from evalverdict.config import TargetConfig
+from evalverdict.data import Prediction
+from evalverdict.targets.base import register_target
+
 
 @dataclass(frozen=True)
 class FakeResponse:
@@ -16,18 +20,6 @@ class FakeResponse:
     input_tokens: int | None = 10
     output_tokens: int | None = 5
     cost_usd: float | None = 0.0001
-
-
-@dataclass(frozen=True)
-class FakePrediction:
-    case_id: str
-    output: str | None
-    error: str | None
-    latency_s: float
-    ttft_s: float | None
-    input_tokens: int | None
-    output_tokens: int | None
-    cost_usd: float | None
 
 
 class FakeTarget:
@@ -54,14 +46,14 @@ class FakeTarget:
                 script.append(FakeResponse(output=f"answer {index}", latency_s=latency_s))
         return cls(script)
 
-    def predict(self, case: object) -> FakePrediction:
+    def predict(self, case: object) -> Prediction:
         case_id = str(getattr(case, "id", case))
         position = len(self.calls)
         if position >= len(self._script):
             raise AssertionError(f"fake target script ran out at call {position + 1}")
         self.calls.append(case_id)
         response = self._script[position]
-        return FakePrediction(
+        return Prediction(
             case_id=case_id,
             output=response.output,
             error=response.error,
@@ -71,3 +63,14 @@ class FakeTarget:
             output_tokens=response.output_tokens,
             cost_usd=response.cost_usd,
         )
+
+
+@register_target("fake")
+def build_fake_target(config: TargetConfig) -> FakeTarget:
+    options = config.model_dump()
+    return FakeTarget.from_seed(
+        options.get("count", 1000),
+        seed=options.get("seed", 0),
+        error_rate=options.get("error_rate", 0.0),
+        malformed_rate=options.get("malformed_rate", 0.0),
+    )

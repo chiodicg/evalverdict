@@ -50,7 +50,7 @@ Versions below are the tested set; the lockfile pins exact versions.
 | Red teaming | inspect-ai 0.3.286, inspect-evals |
 | Tracing | langfuse 5.1.x (OpenTelemetry-based) |
 | Classification, regression, ranking helpers | scikit-learn 1.9.x |
-| BERTScore, ROUGE | evaluate 0.4.6, bert-score, rouge-score |
+| BERTScore, ROUGE | bert-score and rouge-score by default; evaluate 0.4.6 as an optional backend |
 | Fairness | fairlearn 0.15.x |
 | Drift | evidently 0.7.23 |
 | Explainability | shap 0.54.x, lime 0.2.0.1 |
@@ -264,7 +264,7 @@ Tested 2026-10-31 on a real install (Python 3.12, macOS), offline and with no pa
 
 | Check | Result |
 |---|---|
-| ROUGE per-item via `evaluate` | Pass |
+| ROUGE per-item via `evaluate` | Pass, but `evaluate.load` needs network or a cached script. `rouge_score` directly gives identical values offline, so it is the default backend |
 | BERTScore per-item via `evaluate`, using distilbert | Pass; identical scores to `bert_score` directly |
 | DeepEval GEval with custom judge class, standalone `measure()` | Pass with a stub judge |
 | Langfuse 5.1.0 without keys | Pass; warns and becomes a no-op |
@@ -279,14 +279,14 @@ Tested 2026-10-31 on a real install (Python 3.12, macOS), offline and with no pa
 | LiteLLM parameter data for the demo models | Haiku and Sonnet: `supports_sampling_params` is false. Luna: `seed` supported. Handled by D11; not yet confirmed against the live APIs |
 | OpenRouter model list | `gpt-6-luna` listed. Its Claude IDs differ (`anthropic/claude-haiku-5.5`), so IDs are not portable across routes |
 
-**Not yet tested, so the first tasks must cover these:** real API calls and TTFT; Langfuse ingestion with real keys, SDK 5.1 against the self-hosted server (latest 4.72.0), and Langfuse alongside Inspect; DeepEval's faithfulness and RAG metrics; `inspect-evals` suites (not installed in the test, and some may need Docker); `roberta-large` speed on CPU; whether metric loading works offline; OpenRouter cost on real streams.
+**Not yet tested, so the first tasks must cover these:** real API calls and TTFT; Langfuse ingestion with real keys, SDK 5.1 against the self-hosted server (latest 4.72.0), and Langfuse alongside Inspect; DeepEval's faithfulness and RAG metrics; `inspect-evals` suites (not installed in the test, and some may need Docker); `roberta-large` speed on CPU; OpenRouter cost on real streams.
 
 ## Risks
 
 | Risk | Mitigation |
 |---|---|
 | Scope is large, and the design could be wrong across nine families | Build the contract and first milestone before any other family; add families only after it passes. |
-| `evaluate` has had no release since 2025-09 and its README points LLM users to LightEval | Isolate behind one module. `bert_score` and `rouge-score` directly are a fallback; the BERTScore fallback gave identical scores. |
+| `evaluate` has had no release since 2025-09, its README points LLM users to LightEval, and `evaluate.load` downloads and runs metric code | `bert_score` and `rouge-score` directly are the default backends, because they gave identical scores with no download of code. `evaluate` stays available as `backend: evaluate`. |
 | Evidently depends on pandas internals, and its `.dict()` output encodes columns in strings | Pin both, and keep a contract test on the parsed output. |
 | API spend across models, judges and perturbations | Required `budget_usd`, cache, call estimate in `validate`, offline tests by default. Judge calls will dominate: estimated at about $0.009 each against $0.0003 per target call (assuming 2,000 in/500 out and 1,500 in/300 out tokens), so the $26 budget buys roughly 2,900 judge calls. Faithfulness and RAG metrics make several calls per item, so demo set sizes must be planned against this and measured on a small sample first. |
 | Sonnet as judge can't be pinned to a fixed temperature, so scores may vary between runs | Judge decisions are cached, and the 30-item repeat subset also measures judge variation. |

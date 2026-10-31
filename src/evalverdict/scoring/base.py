@@ -132,6 +132,9 @@ class Scorer(ABC):
             raise ValueError(f"unknown metrics {sorted(unknown)}; options: {list(self.metrics)}")
         self.selected_metrics = selected
 
+    def check_dependencies(self) -> None:  # noqa: B027
+        """Fail early, before any model call, if an optional extra is missing."""
+
     @abstractmethod
     def item_values(
         self, predictions: Sequence[Any], references: Sequence[Any], metadata: Any
