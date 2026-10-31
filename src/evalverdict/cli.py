@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from evalverdict._optional import MissingExtraError
 from evalverdict.config import load_config
 from evalverdict.env import load_env
-from evalverdict.runner import execute
+from evalverdict.runner import STATUS_COMPLETE, execute, run_statuses
 
 EXIT_INVALID = 3
 
@@ -32,11 +32,18 @@ def main() -> None:
 @app.command()
 def run(
     config: Annotated[Path, typer.Option("--config", "-c", help="Path to a run config.")],
+    resume: Annotated[
+        Path | None, typer.Option(help="Continue this run directory. Finished calls are reused.")
+    ] = None,
 ) -> None:
     """Run every target in a config, score the results and write a run directory."""
     try:
-        run_dir = execute(load_config(config))
+        run_dir = execute(load_config(config), resume=resume)
     except (ValidationError, ValueError, OSError, MissingExtraError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(EXIT_INVALID) from error
     typer.echo(f"Run written to {run_dir}")
+    unfinished = {t: s for t, s in run_statuses(run_dir).items() if s != STATUS_COMPLETE}
+    if unfinished:
+        typer.echo(f"Run did not complete: {unfinished}", err=True)
+        raise typer.Exit(EXIT_INVALID)

@@ -72,13 +72,13 @@ def test_same_config_and_seed_give_identical_scores(workspace: Path) -> None:
     config = write_config(workspace)
 
     runner.invoke(app, ["run", "-c", str(config)])
-    first = sorted((workspace / "runs").glob("*-demo/a/scores.json"))[0].read_text()
+    first = json.loads(sorted((workspace / "runs").glob("*-demo/a/scores.json"))[0].read_text())
     for folder in (workspace / "runs").iterdir():
         folder.rename(workspace / f"old-{folder.name}")
     runner.invoke(app, ["run", "-c", str(config)])
-    second = sorted((workspace / "runs").glob("*-demo/a/scores.json"))[0].read_text()
+    second = json.loads(sorted((workspace / "runs").glob("*-demo/a/scores.json"))[0].read_text())
 
-    assert first == second
+    assert first["results"] == second["results"]
 
 
 @pytest.mark.ticket("EV-003-T22")

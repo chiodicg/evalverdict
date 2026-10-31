@@ -45,6 +45,11 @@ class RunConfig(BaseModel):
     targets: dict[str, TargetConfig] = Field(min_length=1)
     scorers: list[ScorerEntry] = Field(min_length=1)
     bootstrap: BootstrapConfig = Field(default_factory=BootstrapConfig)
+    budget_usd: float | None = Field(default=None, gt=0)
+    max_error_rate: float = Field(default=0.05, ge=0, le=1)
+    concurrency: int = Field(default=4, gt=0)
+    repeats: int = Field(default=1, gt=0)
+    cache_dir: Path = Path(".cache/evalverdict")
 
     @model_validator(mode="after")
     def _names_are_unique(self) -> RunConfig:
@@ -55,8 +60,15 @@ class RunConfig(BaseModel):
         return self
 
     def sha256(self) -> str:
-        canonical = json.dumps(self.model_dump(mode="json"), sort_keys=True)
-        return hashlib.sha256(canonical.encode()).hexdigest()
+        return _hash(self.model_dump(mode="json"))
+
+    def resume_sha256(self) -> str:
+        """Hash the settings that change results. Budget and pacing can change on resume."""
+        return _hash(self.model_dump(mode="json", exclude={"budget_usd", "concurrency"}))
+
+
+def _hash(settings: dict[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(settings, sort_keys=True).encode()).hexdigest()
 
 
 def load_config(path: Path) -> RunConfig:

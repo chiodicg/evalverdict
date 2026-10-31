@@ -12,6 +12,9 @@ from evalverdict.data import Prediction, TestCase
 
 
 class Target(Protocol):
+    paid: bool
+    cost_known: bool
+
     def predict(self, case: TestCase) -> Prediction: ...
 
 

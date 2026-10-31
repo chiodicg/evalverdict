@@ -37,6 +37,9 @@ class Prediction:
     input_tokens: int | None = None
     output_tokens: int | None = None
     cost_usd: float | None = None
+    parse_failed: bool = False
+    repeat: int = 0
+    retries: int = 0
 
 
 @dataclass(frozen=True)
