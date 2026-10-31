@@ -1,0 +1,31 @@
+.env
+.env.*
+!.env.example
+deploy/langfuse/.env
+tickets/*
+tasks/*
+
+# Environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Run output
+runs/
+logs/
+inspect_logs/
+.deepeval/
+
+# OS and editors
+.DS_Store
+.vscode/
+.idea/
