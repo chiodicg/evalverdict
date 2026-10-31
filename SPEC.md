@@ -154,14 +154,16 @@ class Scorer(ABC):
 
     metrics: ClassVar[tuple[str, ...]]  # the metric names this scorer can produce
 
-    def score(self, predictions, references, metadata=None) -> ScoreResult: ...  # final
+    def score(self, predictions, references, metadata=None) -> tuple[ScoreResult, ...]: ...  # final
 
     @abstractmethod
     def item_values(self, predictions, references, metadata) -> ItemValues: ...
 
-    def aggregate(self, values: ItemValues, idx: np.ndarray) -> float:
-        return float(values.array[idx].mean())  # override for F1, AUROC, ...
+    def aggregate(self, values: ItemValues, idx: np.ndarray, metric: str) -> float:
+        return float(values.arrays[metric][idx].mean())  # override for F1, AUROC, ...
 ```
+
+`score()` returns one `ScoreResult` per selected metric, so a scorer such as ROUGE can offer several metrics (D14).
 
 **Bootstrap rules**
 
