@@ -1,0 +1,6 @@
+{"id": "grp-1", "input": "Applicant A", "reference": "approve", "metadata": {"group": "a"}}
+{"id": "grp-2", "input": "Applicant B", "reference": "reject", "metadata": {"group": "a"}}
+{"id": "grp-3", "input": "Applicant C", "reference": "approve", "metadata": {"group": "a"}}
+{"id": "grp-4", "input": "Applicant D", "reference": "approve", "metadata": {"group": "b"}}
+{"id": "grp-5", "input": "Applicant E", "reference": "reject", "metadata": {"group": "b"}}
+{"id": "grp-6", "input": "Applicant F", "reference": "reject", "metadata": {"group": "b"}}

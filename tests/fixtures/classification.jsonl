@@ -1,0 +1,6 @@
+{"id": "cls-1", "input": "The parcel arrived broken.", "reference": "negative"}
+{"id": "cls-2", "input": "Great service and fast delivery.", "reference": "positive"}
+{"id": "cls-3", "input": "It does what it says.", "reference": "neutral"}
+{"id": "cls-4", "input": "I would never buy this again.", "reference": "negative"}
+{"id": "cls-5", "input": "Lovely quality for the price.", "reference": "positive"}
+{"id": "cls-6", "input": "Average, nothing special.", "reference": "neutral"}

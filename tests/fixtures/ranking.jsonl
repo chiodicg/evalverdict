@@ -1,0 +1,3 @@
+{"id": "rank-1", "input": "refund policy", "reference": ["doc-3", "doc-7"], "graded": {"doc-3": 2, "doc-7": 1}}
+{"id": "rank-2", "input": "delivery times", "reference": ["doc-1"], "graded": {"doc-1": 2}}
+{"id": "rank-3", "input": "account deletion", "reference": ["doc-4", "doc-5", "doc-9"], "graded": {"doc-4": 2, "doc-5": 1, "doc-9": 1}}

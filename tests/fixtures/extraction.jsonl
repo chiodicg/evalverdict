@@ -1,0 +1,3 @@
+{"id": "ext-1", "input": "Invoice 1041 totals 120.50 GBP.", "reference": {"invoice": "1041", "total": 120.5, "currency": "GBP"}}
+{"id": "ext-2", "input": "Invoice 1042 totals 99.00 EUR.", "reference": {"invoice": "1042", "total": 99.0, "currency": "EUR"}}
+{"id": "ext-3", "input": "Invoice 1043 totals 0.00 USD.", "reference": {"invoice": "1043", "total": 0.0, "currency": "USD"}}

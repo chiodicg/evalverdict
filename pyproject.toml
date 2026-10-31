@@ -15,6 +15,7 @@ dependencies = [
     "numpy>=2",
     "pandas<3",
     "pydantic>=2.10,<3",
+    "python-dotenv>=1.0",
     "pyyaml>=6",
     "scikit-learn~=1.9",
     "typer>=0.12",
@@ -39,13 +40,21 @@ packages = ["src/evalverdict"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-m 'not live' --strict-markers"
+addopts = "-m 'not live' --strict-markers -p no:deepeval"
 asyncio_default_fixture_loop_scope = "function"
 markers = [
-    "live: real API calls; spends money and is never run by default",
+    "live(*keys): real API calls; spends money, never runs by default, needs the named keys",
     "statistical: slower simulation tests",
     "ticket(id): links a test to its ticket test ID",
 ]
+
+[tool.coverage.run]
+source = ["evalverdict"]
+branch = true
+
+[tool.coverage.report]
+include = ["*/evalverdict/scoring/*", "*/evalverdict/scorers/*"]
+fail_under = 85
 
 [tool.ruff]
 line-length = 100

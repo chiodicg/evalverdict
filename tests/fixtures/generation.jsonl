@@ -1,0 +1,4 @@
+{"id": "gen-1", "input": "Summarise: The library opens at nine and closes at five on weekdays.", "reference": "The library is open from nine to five on weekdays."}
+{"id": "gen-2", "input": "Summarise: Trains to the coast run hourly, and the last one leaves at ten.", "reference": "Coast trains run hourly until ten."}
+{"id": "gen-3", "input": "Summarise: The bakery sold out of bread by noon because of the festival.", "reference": "The festival made the bakery sell out of bread by noon."}
+{"id": "gen-4", "input": "Summarise: Heavy rain delayed the match by forty minutes.", "reference": "Rain delayed the match by forty minutes."}

@@ -44,7 +44,7 @@ Versions below are the tested set; the lockfile pins exact versions.
 
 | Purpose | Library |
 |---|---|
-| Runtime | Python 3.12, pydantic 2 (config and data models), Typer (CLI), Jinja2 (reports) |
+| Runtime | Python 3.12, pydantic 2 (config and data models), Typer (CLI), Jinja2 (reports), python-dotenv (loads `.env`) |
 | LLM access | litellm 1.106.x (Anthropic, OpenAI, OpenRouter) |
 | LLM-as-judge, faithfulness, RAG trio | deepeval 4.3.x |
 | Red teaming | inspect-ai 0.3.286, inspect-evals |
@@ -65,7 +65,7 @@ Dependencies are installed through extras (`nlp`, `judge`, `redteam`, `tracing`,
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[all,dev]" -c requirements.lock
 
-# Use
+# Use (API keys come from the environment, or from .env in the working directory; exported values win)
 evalverdict validate -c configs/demo_generation.yaml   # no API calls; prints estimated call count
 evalverdict run      -c configs/demo_generation.yaml   # runs targets, scores, writes runs/<id>/
 evalverdict compare  runs/<baseline> runs/<candidate>  # refuses if dataset hashes differ

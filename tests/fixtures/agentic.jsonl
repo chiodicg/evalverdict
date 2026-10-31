@@ -1,0 +1,3 @@
+{"id": "agent-1", "input": "Find the order and refund it.", "reference": {"success": true, "tools": ["lookup_order", "issue_refund"]}}
+{"id": "agent-2", "input": "Check the delivery date.", "reference": {"success": true, "tools": ["lookup_order"]}}
+{"id": "agent-3", "input": "Close the account.", "reference": {"success": true, "tools": ["lookup_account", "close_account"]}}
