@@ -1,6 +1,6 @@
 # Spec: evalverdict (AI Eval Harness)
 
-Status: **Approved; implementation in progress** (`tickets/README.md`) · Date: 2026-10-31 · Source: `scope.md` (this spec is authoritative where they differ)
+Status: **Approved; implementation in progress** · Date: 2026-10-31 · Source: `scope.md` (this spec is authoritative where they differ)
 
 ## Objective
 

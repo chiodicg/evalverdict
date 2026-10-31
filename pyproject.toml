@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "evalverdict"
+version = "0.1.0"
+description = "Evaluate LLMs and ML models with mandatory confidence intervals, and decide whether to change model."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "jinja2>=3.1",
+    "litellm~=1.106",
+    "numpy>=2",
+    "pandas<3",
+    "pydantic>=2.10,<3",
+    "pyyaml>=6",
+    "scikit-learn~=1.9",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+nlp = ["absl-py", "bert-score~=0.3.13", "evaluate~=0.4.6", "nltk", "rouge-score~=0.1.2"]
+judge = ["deepeval~=4.3"]
+redteam = ["inspect-ai~=0.3.286", "inspect-evals"]
+tracing = ["langfuse~=5.1"]
+drift = ["evidently==0.7.23"]
+fairness = ["fairlearn~=0.15.0"]
+explain = ["lime==0.2.0.1", "shap~=0.54.0"]
+all = ["evalverdict[nlp,judge,redteam,tracing,drift,fairness,explain]"]
+dev = ["mypy", "pytest", "pytest-cov", "ruff", "types-PyYAML"]
+
+[project.scripts]
+evalverdict = "evalverdict.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evalverdict"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not live' --strict-markers"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "live: real API calls; spends money and is never run by default",
+    "statistical: slower simulation tests",
+    "ticket(id): links a test to its ticket test ID",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
