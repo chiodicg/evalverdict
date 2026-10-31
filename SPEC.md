@@ -277,6 +277,7 @@ Tested 2026-10-31 on a real install (Python 3.12, macOS), offline and with no pa
 | Evidently PSI and KL with pandas 2.3.3 | Pass; the full check set also passes and `pip check` is clean |
 | LiteLLM cost lookup for the demo routes | Haiku and Luna pass ($0.10/$0.50 per million tokens), Sonnet judge passes ($2/$10). The OpenRouter route tried for Gemini returned `0.0`, so D9 still guards that case |
 | LiteLLM parameter data for the demo models | Haiku and Sonnet: `supports_sampling_params` is false. Luna: `seed` supported. Handled by D11; not yet confirmed against the live APIs |
+| Sampling on `gpt-6-luna` through LiteLLM | LiteLLM rejects `temperature=0` while reasoning is active, although Luna is listed as supporting `temperature`. D11 keeps the demo at provider defaults, and a rejected setting becomes a recorded error |
 | OpenRouter model list | `gpt-6-luna` listed. Its Claude IDs differ (`anthropic/claude-haiku-5.5`), so IDs are not portable across routes |
 
 **Not yet tested, so the first tasks must cover these:** real API calls and TTFT; Langfuse ingestion with real keys, SDK 5.1 against the self-hosted server (latest 4.72.0), and Langfuse alongside Inspect; DeepEval's faithfulness and RAG metrics; `inspect-evals` suites (not installed in the test, and some may need Docker); `roberta-large` speed on CPU; OpenRouter cost on real streams.

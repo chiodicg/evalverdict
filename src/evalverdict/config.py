@@ -45,6 +45,7 @@ class RunConfig(BaseModel):
     targets: dict[str, TargetConfig] = Field(min_length=1)
     scorers: list[ScorerEntry] = Field(min_length=1)
     bootstrap: BootstrapConfig = Field(default_factory=BootstrapConfig)
+    sampling: dict[str, Any] = Field(default_factory=dict)
     budget_usd: float | None = Field(default=None, gt=0)
     max_error_rate: float = Field(default=0.05, ge=0, le=1)
     concurrency: int = Field(default=4, gt=0)

@@ -21,6 +21,7 @@ from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
 from evalverdict.scoring.base import Scorer
 from evalverdict.scoring.registry import build_scorer
 from evalverdict.targets.base import Target, build_target
+from evalverdict.targets.litellm_target import apply_shared_sampling
 
 STATUS_COMPLETE = "complete"
 STATUS_INCOMPLETE = "incomplete"
@@ -250,7 +251,7 @@ def _write_target_run(
     collected: Collected,
     scorers: dict[str, Scorer],
     created_at: str,
-) -> None:
+) -> dict[str, Any]:
     folder.mkdir(parents=True, exist_ok=True)
     summary = _summary(collected, dataset, config)
     disabled = [entry.resolved_name for entry in config.scorers if not entry.enabled]
@@ -290,7 +291,7 @@ def _write_target_run(
         "git_sha": _git_sha(),
         "scorers": _resolved_scorers(config.scorers, scorers),
     }
-    (folder / "manifest.json").write_text(_dump(manifest))
+    return manifest
 
 
 def _check_targets(config: RunConfig, targets: dict[str, Target]) -> None:
@@ -335,6 +336,7 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
     }
     targets = {name: build_target(target) for name, target in config.targets.items()}
     _check_targets(config, targets)
+    dropped = apply_shared_sampling(targets, config.sampling)
 
     now = datetime.now(UTC)
     run_dir = resume or runs_root / f"{now:%Y%m%dT%H%M%S%fZ}-{config.name}"
@@ -342,8 +344,12 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
     budget = Budget(config.budget_usd)
     for name, target in targets.items():
         target_config = config.targets[name].model_dump(mode="json")
-        collected = _collect(target, target_config, dataset.cases, config, cache, budget)
-        _write_target_run(
+        identity = {**target_config, "parameters_sent": target.parameters_sent()}
+        collected = _collect(target, identity, dataset.cases, config, cache, budget)
+        written = _write_target_run(
             run_dir / name, config, dataset, name, collected, scorers, now.isoformat()
         )
+        written["parameters_sent"] = target.parameters_sent()
+        written["sampling_dropped"] = dropped
+        (run_dir / name / "manifest.json").write_text(_dump(written))
     return run_dir

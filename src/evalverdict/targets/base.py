@@ -5,17 +5,22 @@ from __future__ import annotations
 import importlib
 import pkgutil
 from collections.abc import Callable
-from typing import Protocol
+from typing import Any, Protocol
 
 from evalverdict.config import TargetConfig
 from evalverdict.data import Prediction, TestCase
 
 
 class Target(Protocol):
-    paid: bool
-    cost_known: bool
+    @property
+    def paid(self) -> bool: ...
+
+    @property
+    def cost_known(self) -> bool: ...
 
     def predict(self, case: TestCase) -> Prediction: ...
+
+    def parameters_sent(self) -> dict[str, Any]: ...
 
 
 TargetFactory = Callable[[TargetConfig], Target]

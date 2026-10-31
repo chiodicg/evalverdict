@@ -34,9 +34,11 @@ class Prediction:
     error: str | None = None
     latency_s: float | None = None
     ttft_s: float | None = None
+    throughput_tokens_per_s: float | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
     cost_usd: float | None = None
+    cost_source: str = "not_measured"
     parse_failed: bool = False
     repeat: int = 0
     retries: int = 0

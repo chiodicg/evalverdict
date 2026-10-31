@@ -52,6 +52,9 @@ class FakeTarget:
                 script.append(FakeResponse(output=f"answer {index}", latency_s=latency_s))
         return cls(script)
 
+    def parameters_sent(self) -> dict[str, object]:
+        return {}
+
     def predict(self, case: object) -> Prediction:
         case_id = str(getattr(case, "id", case))
         position = len(self.calls)
@@ -95,6 +98,9 @@ class CaseTarget:
         self.max_in_flight = 0
         self._in_flight = 0
         self._lock = threading.Lock()
+
+    def parameters_sent(self) -> dict[str, object]:
+        return {}
 
     def predict(self, case: TestCase) -> Prediction:
         if case.id == self.interrupt_on:
