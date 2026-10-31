@@ -212,7 +212,8 @@ def _score(
 
     results = []
     for name, scorer in scorers.items():
-        for result in scorer.score(outputs, references, item_metadata, ids=ids, clusters=clusters):
+        inputs = usable if scorer.wants_predictions else outputs
+        for result in scorer.score(inputs, references, item_metadata, ids=ids, clusters=clusters):
             results.append({"scorer": name, **asdict(result)})
     return results
 

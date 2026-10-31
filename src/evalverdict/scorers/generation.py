@@ -6,8 +6,11 @@ from collections.abc import Sequence
 from typing import Any, Literal
 
 import numpy as np
+from pydantic import Field
 
 from evalverdict._optional import optional_import
+from evalverdict.engines import bertscore
+from evalverdict.engines.bertscore import Backend
 from evalverdict.scoring.base import Family, ItemValues, Scorer
 from evalverdict.scoring.registry import register_scorer
 
@@ -48,3 +51,29 @@ class RougeScorer(Scorer):
         return ItemValues(
             arrays={key: np.array([row[key].fmeasure for row in rows]) for key in self.metrics}
         )
+
+
+@register_scorer("bertscore")
+class BertScoreScorer(Scorer):
+    family = Family.GENERATION
+    metrics = ("precision", "recall", "f1")
+
+    class Params(Scorer.Params):
+        model_type: str = "roberta-large"
+        batch_size: int = Field(default=32, gt=0)
+        backend: Backend = "bert_score"
+
+    def check_dependencies(self) -> None:
+        optional_import(self.params.backend)
+
+    def item_values(
+        self, predictions: Sequence[Any], references: Sequence[Any], metadata: Any
+    ) -> ItemValues:
+        precision, recall, f1 = bertscore.compute_bertscore(
+            [str(prediction) for prediction in predictions],
+            [str(reference) for reference in references],
+            model_type=self.params.model_type,
+            batch_size=self.params.batch_size,
+            backend=self.params.backend,
+        )
+        return ItemValues(arrays={"precision": precision, "recall": recall, "f1": f1})

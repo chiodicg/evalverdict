@@ -88,12 +88,26 @@ class ScoreResult:
 
 
 @dataclass(frozen=True)
+class NotMeasured:
+    """A metric with no data. It has no value, so it can never be read as a score."""
+
+    name: str
+    family: Family
+    reason: str
+
+
+@dataclass(frozen=True)
 class ItemValues:
-    """Per-item data. `arrays` holds item scores or whatever `aggregate` needs."""
+    """Per-item data. `arrays` holds item scores or whatever `aggregate` needs.
+
+    Metrics in `sparse` may have NaN for items where nothing was measured. They are
+    scored on the measured items only, and `n` counts those items.
+    """
 
     arrays: Mapping[str, NDArray[Any]]
     details: Sequence[Mapping[str, Any]] = ()
     result_details: Mapping[str, Any] = field(default_factory=dict)
+    sparse: frozenset[str] = frozenset()
 
 
 class Scorer(ABC):
@@ -105,6 +119,7 @@ class Scorer(ABC):
     family: ClassVar[Family]
     metrics: ClassVar[tuple[str, ...]]
     lower_is_better: ClassVar[frozenset[str]] = frozenset()
+    wants_predictions: ClassVar[bool] = False
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -126,11 +141,19 @@ class Scorer(ABC):
         self.params: Any = self.Params(**(params or {}))
         self.bootstrap = bootstrap or BootstrapConfig()
         self.seed = seed
-        selected = tuple(metrics) if metrics is not None else self.metrics
-        unknown = set(selected) - set(self.metrics)
+        offered = self.available_metrics()
+        selected = tuple(metrics) if metrics is not None else offered
+        unknown = set(selected) - set(offered)
         if unknown:
-            raise ValueError(f"unknown metrics {sorted(unknown)}; options: {list(self.metrics)}")
+            raise ValueError(f"unknown metrics {sorted(unknown)}; options: {list(offered)}")
         self.selected_metrics = selected
+
+    def available_metrics(self) -> tuple[str, ...]:
+        """The metrics on offer. Override when params decide them."""
+        return self.metrics
+
+    def is_lower_better(self, metric: str) -> bool:
+        return metric in self.lower_is_better
 
     def check_dependencies(self) -> None:  # noqa: B027
         """Fail early, before any model call, if an optional extra is missing."""
@@ -154,7 +177,7 @@ class Scorer(ABC):
         *,
         ids: Sequence[str] | None = None,
         clusters: Sequence[Any] | None = None,
-    ) -> tuple[ScoreResult, ...]:
+    ) -> tuple[ScoreResult | NotMeasured, ...]:
         n = len(predictions)
         if n == 0:
             raise ValueError("no items to score")
@@ -179,17 +202,23 @@ class Scorer(ABC):
         values: ItemValues,
         item_ids: tuple[str, ...],
         groups: NDArray[Any] | None,
-    ) -> ScoreResult:
-        n_items = len(item_ids)
-        value = self._evaluate(values, np.arange(n_items, dtype=np.int64), metric)
+    ) -> ScoreResult | NotMeasured:
+        positions = np.arange(len(item_ids), dtype=np.int64)
+        if metric in values.sparse:
+            positions = np.flatnonzero(~np.isnan(values.arrays[metric])).astype(np.int64)
+            if positions.size == 0:
+                return NotMeasured(metric, self.family, "no item has this measurement")
+            groups = groups[positions] if groups is not None else None
+
+        value = self._evaluate(values, positions, metric)
         if value is None:
             raise UndefinedMetricError(f"{metric} is undefined on this data")
 
         config = self.bootstrap
         seed = np.random.SeedSequence([self.seed, zlib.crc32(metric.encode())])
         draws = [
-            self._evaluate(values, idx, metric)
-            for idx in resample_indices(n_items, config.n_resamples, seed, groups)
+            self._evaluate(values, positions[idx], metric)
+            for idx in resample_indices(positions.size, config.n_resamples, seed, groups)
         ]
         defined = np.array([draw for draw in draws if draw is not None])
         if defined.size == 0:
@@ -207,16 +236,16 @@ class Scorer(ABC):
             n_resamples=config.n_resamples,
             n_undefined=config.n_resamples - int(defined.size),
         )
-        n = int(np.unique(groups).size) if groups is not None else n_items
+        n = int(np.unique(groups).size) if groups is not None else int(positions.size)
         return ScoreResult(
             name=metric,
             family=self.family,
             value=value,
             ci=interval,
             n=n,
-            higher_is_better=metric not in self.lower_is_better,
+            higher_is_better=not self.is_lower_better(metric),
             per_item=_item_scores(metric, values, item_ids),
-            details=dict(values.result_details),
+            details={**values.result_details, "n_items": len(item_ids)},
             flags=_flags(n, interval),
         )
 
@@ -232,6 +261,8 @@ def _reject_nan(values: ItemValues, item_ids: tuple[str, ...]) -> None:
     for name, array in values.arrays.items():
         if len(array) != len(item_ids):
             raise ValueError(f"item array {name!r} does not match the number of items")
+        if name in values.sparse:
+            continue
         if np.issubdtype(array.dtype, np.floating) and np.isnan(array).any():
             raise ValueError(
                 f"NaN in {name!r} for item {item_ids[int(np.argmax(np.isnan(array)))]}"
@@ -245,11 +276,17 @@ def _item_scores(
     return tuple(
         ItemScore(
             item_id=item_id,
-            value=float(array[index]) if array is not None else None,
+            value=_item_value(array, index),
             detail=values.details[index] if values.details else {},
         )
         for index, item_id in enumerate(item_ids)
     )
+
+
+def _item_value(array: NDArray[Any] | None, index: int) -> float | None:
+    if array is None or not np.issubdtype(array.dtype, np.number) or np.isnan(array[index]):
+        return None
+    return float(array[index])
 
 
 def _flags(n: int, interval: ConfidenceInterval) -> tuple[str, ...]:

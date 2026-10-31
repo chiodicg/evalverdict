@@ -266,6 +266,8 @@ Tested 2026-10-31 on a real install (Python 3.12, macOS), offline and with no pa
 |---|---|
 | ROUGE per-item via `evaluate` | Pass, but `evaluate.load` needs network or a cached script. `rouge_score` directly gives identical values offline, so it is the default backend |
 | BERTScore per-item via `evaluate`, using distilbert | Pass; identical scores to `bert_score` directly |
+| BERTScore on empty text | `bert_score` 0.3.13 crashes under `transformers` 5, so the engine scores empty text 0 without calling the model |
+| `roberta-large` speed on CPU | About 7 seconds for 20 items, batch size 32 |
 | DeepEval GEval with custom judge class, standalone `measure()` | Pass with a stub judge |
 | Langfuse 5.1.0 without keys | Pass; warns and becomes a no-op |
 | Inspect eval through mock model | Pass; per-sample scores are letters (`C`/`I`) that must be mapped to numbers |
@@ -280,7 +282,7 @@ Tested 2026-10-31 on a real install (Python 3.12, macOS), offline and with no pa
 | Sampling on `gpt-6-luna` through LiteLLM | LiteLLM rejects `temperature=0` while reasoning is active, although Luna is listed as supporting `temperature`. D11 keeps the demo at provider defaults, and a rejected setting becomes a recorded error |
 | OpenRouter model list | `gpt-6-luna` listed. Its Claude IDs differ (`anthropic/claude-haiku-5.5`), so IDs are not portable across routes |
 
-**Not yet tested, so the first tasks must cover these:** real API calls and TTFT; Langfuse ingestion with real keys, SDK 5.1 against the self-hosted server (latest 4.72.0), and Langfuse alongside Inspect; DeepEval's faithfulness and RAG metrics; `inspect-evals` suites (not installed in the test, and some may need Docker); `roberta-large` speed on CPU; OpenRouter cost on real streams.
+**Not yet tested, so the first tasks must cover these:** real API calls and TTFT; Langfuse ingestion with real keys, SDK 5.1 against the self-hosted server (latest 4.72.0), and Langfuse alongside Inspect; DeepEval's faithfulness and RAG metrics; `inspect-evals` suites (not installed in the test, and some may need Docker); OpenRouter cost on real streams.
 
 ## Risks
 
