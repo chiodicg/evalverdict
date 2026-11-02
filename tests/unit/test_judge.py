@@ -350,3 +350,21 @@ def test_telemetry_opt_out_is_set_and_nothing_reaches_the_network(
     scorer_with(StubJudge(scores=[0.5, 0.5])).score(OUTPUTS, REFERENCES, CASES)
 
     assert os.environ["DEEPEVAL_TELEMETRY_OPT_OUT"] == "YES"
+
+
+@pytest.mark.ticket("EV-008-T22")
+def test_each_target_manifest_shows_only_its_own_judge_spend(workspace: Path) -> None:
+    INSTANCES["t2"] = CaseTarget(default=FakeResponse(output="other summary"))
+    targets = {
+        "a": {"kind": "instance", "ref": "t", "model": "model/a"},
+        "b": {"kind": "instance", "ref": "t2", "model": "model/b"},
+    }
+    config = run_config(
+        workspace, {"model": "judge/model", "params": {"mock_response": REPLY}}, targets=targets
+    )
+
+    run_dir = execute(config)
+
+    for name in ("a", "b"):
+        manifest = json.loads((run_dir / name / "manifest.json").read_text())
+        assert manifest["judge"]["calls"] + manifest["judge"]["cache_hits"] == 1

@@ -438,6 +438,15 @@ def prepare(config: RunConfig, resume: Path | None = None) -> Prepared:
     return Prepared(config, dataset, scorers, targets, judges, cache, budget, dropped)
 
 
+def _judge_totals(judges: list[JudgeClient]) -> tuple[float, float, float]:
+    """Run-wide judge spend, calls and cache hits, so each target can record its own share."""
+    return (
+        sum(client.spend_usd for client in judges),
+        float(sum(client.calls for client in judges)),
+        float(sum(client.cache_hits for client in judges)),
+    )
+
+
 def run_outcomes(run_dir: Path) -> dict[str, str]:
     """The gate outcome of each target in a run."""
     return {
@@ -454,6 +463,7 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
     now = datetime.now(UTC)
     run_dir = resume or runs_root / f"{now:%Y%m%dT%H%M%S%fZ}-{config.name}"
     for name, target in ready.targets.items():
+        judged_before = _judge_totals(judges)
         target_config = config.targets[name].model_dump(mode="json")
         identity = {**target_config, "parameters_sent": target.parameters_sent()}
         collected = _collect(target, identity, dataset.cases, config, ready.cache, ready.budget)
@@ -463,12 +473,16 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
         written["parameters_sent"] = target.parameters_sent()
         written["sampling_dropped"] = ready.dropped
         if config.judge is not None:
+            spend, calls, hits = (
+                now_total - before
+                for now_total, before in zip(_judge_totals(judges), judged_before, strict=True)
+            )
             written["judge"] = {
                 "model": config.judge.model,
                 "allow_self_judging": config.judge.allow_self_judging,
-                "spend_usd": sum(client.spend_usd for client in judges),
-                "calls": sum(client.calls for client in judges),
-                "cache_hits": sum(client.cache_hits for client in judges),
+                "spend_usd": spend,
+                "calls": int(calls),
+                "cache_hits": int(hits),
             }
         (run_dir / name / "manifest.json").write_text(_dump(written))
     if len(ready.targets) == 2:

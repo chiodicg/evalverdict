@@ -69,7 +69,8 @@
 {% for family, results in families.items() %}
 <section>
 <h2>{{ family | capitalize }}</h2>
-{% if family == "operational" %}<p class="muted">Measured with concurrency {{ manifest.concurrency }}, run started {{ manifest.created_at }}. Latency depends on load and region, so compare it between runs made close together.</p>{% endif %}
+{% if family == "operational" %}<p class="muted">Measured with concurrency {{ manifest.concurrency }}, run started {{ manifest.created_at }}. Latency depends on load and region, so compare it between runs made close together.</p>
+<p class="muted">Output tokens include any hidden reasoning tokens a model reports, so throughput is not comparable between a reasoning model and one that does not reason.</p>{% endif %}
 <div class="wrap"><table>
 <tr><th>Metric</th><th>Result</th><th>Interval</th><th>Direction</th></tr>
 {% for result in results %}
