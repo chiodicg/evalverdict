@@ -25,6 +25,7 @@ match the files exactly; tests check this.
 - **Changes from the source:** HTML is converted to plain text, and email addresses and
   phone numbers are replaced with `[email address]` and `[phone number]`, because
   contact details are not needed for summarising and some may name individuals.
+- **Language:** one page is in Welsh, because GOV.UK publishes some guidance in Welsh as well as English. It is kept, since how a model handles it is informative.
 - **Rebuilding:** GOV.UK pages change, so a rebuild may differ. The committed file is the
   reference, and its hash is recorded above.
 - **Approval:** Carla chose this source and licence on 2026-11-02.
