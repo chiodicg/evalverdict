@@ -271,6 +271,7 @@ def _write_target_run(
             "path": str(dataset.path),
             "sha256": dataset.sha256,
             "n": len(dataset.cases),
+            "attribution": config.dataset_attribution,
         },
         "seed": config.seed,
         "gates": {key: gate.model_dump() for key, gate in config.gates.items()},

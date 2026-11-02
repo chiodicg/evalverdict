@@ -93,6 +93,7 @@ class RunConfig(BaseModel):
     name: str
     seed: int = 0
     dataset: Path
+    dataset_attribution: str | None = None
     targets: dict[str, TargetConfig] = Field(min_length=1)
     scorers: list[ScorerEntry] = Field(min_length=1)
     bootstrap: BootstrapConfig = Field(default_factory=BootstrapConfig)

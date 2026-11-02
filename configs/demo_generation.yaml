@@ -1,0 +1,30 @@
+# Milestone 1: should we move from Claude Haiku 5.5 to GPT 6 Luna for one-sentence summaries?
+name: haiku-vs-luna
+seed: 42
+dataset: datasets/summaries.jsonl
+dataset_attribution: Contains public sector information licensed under the Open Government Licence v3.0.
+budget_usd: 6.00          # EV-015's allocation; EV-013 measures real costs first
+concurrency: 4
+targets:
+  baseline:
+    kind: litellm
+    model: anthropic/claude-haiku-5-5
+    system_prompt: Summarise this GOV.UK guidance page in one sentence of at most 30 words. Reply with the sentence only.
+    max_tokens: 1024
+  candidate:
+    kind: litellm
+    model: openai/gpt-6-luna
+    system_prompt: Summarise this GOV.UK guidance page in one sentence of at most 30 words. Reply with the sentence only.
+    max_tokens: 1024
+judge:
+  model: anthropic/claude-sonnet-5-5
+scorers:
+  - {type: judge, name: summary_quality, params: {rubric: rubrics/summary_quality.yaml}}
+  - {type: bertscore}
+  - {type: rouge, metrics: [rougeL]}
+  - {type: latency}
+  - {type: cost}
+gates:
+  summary_quality.score: {min: 0.75, primary: true}
+  bertscore.f1: {min: 0.70}
+  latency.ttft_p95_s: {max: 2.0}

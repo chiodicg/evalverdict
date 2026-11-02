@@ -10,6 +10,7 @@
 <main>
 <h1>{{ manifest.name }}: {{ manifest.target }}</h1>
 <p class="muted">{{ manifest.target_config.get("model", manifest.target_config.kind) }} · dataset {{ manifest.dataset.path }} ({{ manifest.dataset.n }} items) · seed {{ manifest.seed }}</p>
+{% if manifest.dataset.attribution %}<p class="muted">Dataset: {{ manifest.dataset.attribution }}</p>{% endif %}
 {% if run.status == "invalid" %}
 <div class="banner banner-invalid">Invalid run: too many items failed, so these results must not be used to make a decision.</div>
 {% elif run.status == "incomplete" %}
