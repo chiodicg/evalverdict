@@ -121,3 +121,23 @@ def test_invalid_run_exits_three(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 
     assert result.exit_code == 3
     assert "invalid" in result.output
+
+
+def test_compare_command_prints_verdicts_and_writes_the_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_with(tmp_path, monkeypatch, CaseTarget(default=FakeResponse(output="alpha")), {})
+    target_dir = next((tmp_path / "runs").glob("*-demo/a"))
+    out = tmp_path / "cmp.json"
+
+    result = runner.invoke(app, ["compare", str(target_dir), str(target_dir), "--output", str(out)])
+
+    assert result.exit_code == 0, result.output
+    assert "rouge.rouge1" in result.output
+    assert json.loads(out.read_text())["recommendation"]["decision"] == "none"
+
+
+def test_compare_refusal_exits_three(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["compare", str(tmp_path / "x"), str(tmp_path / "y")])
+
+    assert result.exit_code == 3

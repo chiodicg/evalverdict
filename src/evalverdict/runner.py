@@ -22,6 +22,7 @@ from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
 from evalverdict.engines.judge_client import JudgeClient
 from evalverdict.scorers.generation import base_model
 from evalverdict.scoring.base import Scorer
+from evalverdict.scoring.compare import compare_runs
 from evalverdict.scoring.gates import INVALID, apply_gates, overall_outcome
 from evalverdict.scoring.registry import build_scorer
 from evalverdict.targets.base import Target, build_target
@@ -158,6 +159,7 @@ def _resolved_scorers(
             {
                 "name": entry.resolved_name,
                 "type": entry.type,
+                "import": entry.import_path,
                 "enabled": entry.enabled,
                 "metrics": list(scorer.selected_metrics) if scorer else entry.metrics,
                 "params": scorer.params.model_dump(mode="json") if scorer else entry.params,
@@ -270,6 +272,7 @@ def _write_target_run(
             "n": len(dataset.cases),
         },
         "seed": config.seed,
+        "gates": {key: gate.model_dump() for key, gate in config.gates.items()},
         "concurrency": config.concurrency,
         "repeats": config.repeats,
         "spend": {
@@ -447,4 +450,17 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
                 "cache_hits": sum(client.cache_hits for client in judges),
             }
         (run_dir / name / "manifest.json").write_text(_dump(written))
+    if len(ready.targets) == 2:
+        _write_comparison(run_dir, list(ready.targets))
     return run_dir
+
+
+def _write_comparison(run_dir: Path, names: list[str]) -> None:
+    """With two targets, compare them. A target named baseline is the baseline."""
+    baseline = "baseline" if "baseline" in names else names[0]
+    candidate = next(name for name in names if name != baseline)
+    try:
+        comparison = compare_runs(run_dir / baseline, run_dir / candidate)
+    except ValueError as error:
+        comparison = {"baseline": baseline, "candidate": candidate, "refused": str(error)}
+    (run_dir / "comparison.json").write_text(_dump(comparison))

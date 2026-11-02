@@ -14,6 +14,7 @@ from evalverdict.config import load_config
 from evalverdict.env import load_env
 from evalverdict.estimate import estimate_run
 from evalverdict.runner import execute, prepare, run_outcomes
+from evalverdict.scoring.compare import compare_runs
 from evalverdict.scoring.gates import EXIT_CODES, INVALID, worst_outcome
 from evalverdict.scoring.registry import registered_scorers
 
@@ -76,6 +77,34 @@ def validate(config: ConfigOption) -> None:
             f"Warning: estimated cost exceeds budget_usd (${loaded.budget_usd:.2f}). "
             "The run will stop when the budget is reached."
         )
+
+
+@app.command()
+def compare(
+    baseline: Annotated[Path, typer.Argument(help="Baseline target run directory.")],
+    candidate: Annotated[Path, typer.Argument(help="Candidate target run directory.")],
+    output: Annotated[Path, typer.Option(help="Where to write the comparison.")] = Path(
+        "comparison.json"
+    ),
+) -> None:
+    """Compare two runs on the same items, with an interval on each difference."""
+    try:
+        result = compare_runs(baseline, candidate)
+    except SETUP_ERRORS as error:
+        raise _fail(error) from error
+    output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    for item in result["metrics"]:
+        if item["comparable"]:
+            ci = item["ci"]
+            typer.echo(
+                f"{item['key']}: {item['difference']:+.3f} "
+                f"[{ci['low']:+.3f}, {ci['high']:+.3f}] {item['verdict']}"
+            )
+        else:
+            typer.echo(f"{item['key']}: not comparable ({item['reason']})")
+    recommendation = result["recommendation"]
+    typer.echo(f"Recommendation: {recommendation['decision']} ({recommendation['reason']})")
+    typer.echo(f"Written to {output}")
 
 
 @scorers_app.command("list")
