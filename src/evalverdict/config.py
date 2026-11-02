@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from evalverdict.scoring.base import BootstrapConfig
 
@@ -36,6 +36,23 @@ class TargetConfig(BaseModel):
     kind: str
 
 
+class JudgeConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    model: str
+    pricing: dict[str, float] | None = None
+    max_tokens: int = Field(default=1024, gt=0)
+    params: dict[str, Any] = Field(default_factory=dict)
+    allow_self_judging: bool = False
+
+    @field_validator("model")
+    @classmethod
+    def _exact_model(cls, model: str) -> str:
+        if model.startswith("~") or "latest" in model:
+            raise ValueError(f"the judge needs an exact model ID, not an alias: {model}")
+        return model
+
+
 class RunConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -45,6 +62,7 @@ class RunConfig(BaseModel):
     targets: dict[str, TargetConfig] = Field(min_length=1)
     scorers: list[ScorerEntry] = Field(min_length=1)
     bootstrap: BootstrapConfig = Field(default_factory=BootstrapConfig)
+    judge: JudgeConfig | None = None
     sampling: dict[str, Any] = Field(default_factory=dict)
     budget_usd: float | None = Field(default=None, gt=0)
     max_error_rate: float = Field(default=0.05, ge=0, le=1)

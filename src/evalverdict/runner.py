@@ -15,20 +15,22 @@ from typing import Any
 
 import numpy as np
 
+from evalverdict.budget import Budget
 from evalverdict.cache import ResponseCache, cache_key
-from evalverdict.config import RunConfig, ScorerEntry
+from evalverdict.config import RunConfig, ScorerEntry, TargetConfig
 from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
+from evalverdict.engines.judge_client import JudgeClient
+from evalverdict.scorers.generation import base_model
 from evalverdict.scoring.base import Scorer
 from evalverdict.scoring.registry import build_scorer
 from evalverdict.targets.base import Target, build_target
-from evalverdict.targets.litellm_target import apply_shared_sampling
+from evalverdict.targets.litellm_target import LiteLLMTarget, apply_shared_sampling
 
 STATUS_COMPLETE = "complete"
 STATUS_INCOMPLETE = "incomplete"
 STATUS_INVALID = "invalid"
 STOP_BUDGET = "budget"
 STOP_INTERRUPTED = "interrupted"
-ROUNDING_TOLERANCE = 1e-9
 
 VERSIONED_PACKAGES = (
     "evalverdict",
@@ -47,38 +49,6 @@ VERSIONED_PACKAGES = (
     "shap",
     "lime",
 )
-
-
-class Budget:
-    """Tracks spend across a run, allowing for calls that are still in flight.
-
-    The first call runs alone, because nothing is known about cost until it returns.
-    After that, each call in flight is assumed to cost as much as the dearest seen so far.
-    """
-
-    def __init__(self, limit_usd: float | None) -> None:
-        self.limit_usd = limit_usd
-        self.spent_usd = 0.0
-        self.in_flight = 0
-        self.dearest_call_usd: float | None = None
-
-    def reserve(self) -> bool:
-        if self.limit_usd is not None:
-            if self.dearest_call_usd is None:
-                if self.in_flight > 0:
-                    return False
-            else:
-                projected = self.spent_usd + (self.in_flight + 1) * self.dearest_call_usd
-                if projected > self.limit_usd + ROUNDING_TOLERANCE:
-                    return False
-        self.in_flight += 1
-        return True
-
-    def settle(self, cost_usd: float | None) -> None:
-        self.in_flight -= 1
-        charged = cost_usd if cost_usd is not None else (self.dearest_call_usd or 0.0)
-        self.spent_usd += charged
-        self.dearest_call_usd = max(self.dearest_call_usd or 0.0, charged)
 
 
 @dataclass
@@ -213,25 +183,36 @@ def _score(
     results = []
     for name, scorer in scorers.items():
         inputs = usable if scorer.wants_predictions else outputs
-        for result in scorer.score(inputs, references, item_metadata, ids=ids, clusters=clusters):
+        context = [cases[item.case_id] for item in usable] if scorer.wants_cases else item_metadata
+        for result in scorer.score(inputs, references, context, ids=ids, clusters=clusters):
             results.append({"scorer": name, **asdict(result)})
     return results
 
 
-def _summary(collected: Collected, dataset: Dataset, config: RunConfig) -> dict[str, Any]:
+def _summary(
+    collected: Collected, dataset: Dataset, config: RunConfig, scorers: dict[str, Scorer]
+) -> dict[str, Any]:
     completed = len(collected.predictions)
     errors = sum(item.error is not None for item in collected.predictions)
     parse_failures = sum(item.parse_failed for item in collected.predictions)
     error_rate = errors / completed if completed else 0.0
-    if error_rate > config.max_error_rate:
+    health = [scorer.health() for scorer in scorers.values()]
+    judge_failures = sum(item.failed for item in health)
+    too_many_failures = any(
+        item.total and item.failed / item.total > config.max_error_rate for item in health
+    )
+    stop_reason = collected.stop_reason or next(
+        (item.stop_reason for item in health if item.stop_reason), None
+    )
+    if error_rate > config.max_error_rate or too_many_failures:
         status = STATUS_INVALID
-    elif collected.stop_reason is not None:
+    elif stop_reason is not None:
         status = STATUS_INCOMPLETE
     else:
         status = STATUS_COMPLETE
     return {
         "status": status,
-        "stop_reason": collected.stop_reason,
+        "stop_reason": stop_reason,
         "n_requested": len(dataset.cases) * config.repeats,
         "n_completed": completed,
         "n_errors": errors,
@@ -239,6 +220,7 @@ def _summary(collected: Collected, dataset: Dataset, config: RunConfig) -> dict[
         "n_parse_failures": parse_failures,
         "parse_failure_rate": parse_failures / completed if completed else 0.0,
         "cache_hits": collected.cache_hits,
+        "judge_failures": judge_failures,
         "repeats": config.repeats,
         "concurrency": config.concurrency,
     }
@@ -254,9 +236,9 @@ def _write_target_run(
     created_at: str,
 ) -> dict[str, Any]:
     folder.mkdir(parents=True, exist_ok=True)
-    summary = _summary(collected, dataset, config)
     disabled = [entry.resolved_name for entry in config.scorers if not entry.enabled]
     results = _score(collected, dataset, config, scorers)
+    summary = _summary(collected, dataset, config, scorers)
     (folder / "scores.json").write_text(
         _dump({"results": results, "disabled": disabled, "run": summary})
     )
@@ -305,6 +287,56 @@ def _check_targets(config: RunConfig, targets: dict[str, Target]) -> None:
             raise ValueError(f"target {name!r} has no cost source; add pricing to its config")
 
 
+def _target_models(config: RunConfig) -> list[str]:
+    models = [target.model_dump().get("model") for target in config.targets.values()]
+    return [model for model in models if isinstance(model, str)]
+
+
+def _judge_client(
+    config: RunConfig,
+    model: str,
+    cache: ResponseCache,
+    budget: Budget,
+) -> JudgeClient:
+    judge = config.judge
+    if judge is None:
+        raise ValueError("a judge scorer needs a judge block in the config")
+    if not judge.allow_self_judging and any(
+        base_model(model) == base_model(target) for target in _target_models(config)
+    ):
+        raise ValueError(f"judge {model} is a model under test; set allow_self_judging to allow it")
+    settings: dict[str, Any] = {
+        "kind": "litellm",
+        "model": model,
+        "max_tokens": judge.max_tokens,
+        "params": judge.params,
+    }
+    if judge.pricing is not None:
+        settings["pricing"] = judge.pricing
+    target = LiteLLMTarget(TargetConfig(**settings))
+    if target.paid and config.budget_usd is None:
+        raise ValueError(f"judge {model} costs money, so budget_usd is required")
+    if target.paid and not target.cost_known:
+        raise ValueError(f"judge {model} has no cost source; add pricing to the judge config")
+    identity = {"max_tokens": judge.max_tokens, "params": judge.params}
+    return JudgeClient(target, model, cache, budget, identity)
+
+
+def _bind_judges(
+    config: RunConfig, scorers: dict[str, Scorer], cache: ResponseCache, budget: Budget
+) -> list[JudgeClient]:
+    clients: dict[str, JudgeClient] = {}
+    for scorer in scorers.values():
+        if not scorer.needs_judge:
+            continue
+        if config.judge is None:
+            raise ValueError("a judge scorer needs a judge block in the config")
+        model = scorer.params.judge_model or config.judge.model
+        clients.setdefault(model, _judge_client(config, model, cache, budget))
+        scorer.bind_judge(clients[model], model, _target_models(config))  # type: ignore[attr-defined]
+    return list(clients.values())
+
+
 def _check_resume(run_dir: Path, config: RunConfig, dataset: Dataset) -> None:
     manifests = sorted(run_dir.glob("*/manifest.json"))
     if not manifests:
@@ -338,11 +370,12 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
     targets = {name: build_target(target) for name, target in config.targets.items()}
     _check_targets(config, targets)
     dropped = apply_shared_sampling(targets, config.sampling)
+    cache = ResponseCache(config.cache_dir)
+    budget = Budget(config.budget_usd)
+    judges = _bind_judges(config, scorers, cache, budget)
 
     now = datetime.now(UTC)
     run_dir = resume or runs_root / f"{now:%Y%m%dT%H%M%S%fZ}-{config.name}"
-    cache = ResponseCache(config.cache_dir)
-    budget = Budget(config.budget_usd)
     for name, target in targets.items():
         target_config = config.targets[name].model_dump(mode="json")
         identity = {**target_config, "parameters_sent": target.parameters_sent()}
@@ -352,5 +385,13 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
         )
         written["parameters_sent"] = target.parameters_sent()
         written["sampling_dropped"] = dropped
+        if config.judge is not None:
+            written["judge"] = {
+                "model": config.judge.model,
+                "allow_self_judging": config.judge.allow_self_judging,
+                "spend_usd": sum(client.spend_usd for client in judges),
+                "calls": sum(client.calls for client in judges),
+                "cache_hits": sum(client.cache_hits for client in judges),
+            }
         (run_dir / name / "manifest.json").write_text(_dump(written))
     return run_dir

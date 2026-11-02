@@ -1,0 +1,10 @@
+name: summary_quality
+version: 1
+description: Judges how well a summary captures its source text.
+fields: [input, actual_output, expected_output]
+steps:
+  - Check that the actual output states the main point of the source text in the input.
+  - Penalise any claim in the actual output that the source text does not support.
+  - Check that the actual output covers the key facts in the expected output.
+  - Penalise repetition, filler or text that is not part of a summary.
+  - Give a higher score only when the summary is both accurate and complete.

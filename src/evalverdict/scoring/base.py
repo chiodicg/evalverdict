@@ -35,6 +35,15 @@ class Family(StrEnum):
     EXPLAINABILITY = "explainability"
 
 
+@dataclass(frozen=True)
+class ScorerHealth:
+    """Problems a scorer met that affect how far its results can be trusted."""
+
+    failed: int = 0
+    total: int = 0
+    stop_reason: str | None = None
+
+
 class UndefinedMetricError(ValueError):
     """A metric cannot be computed on this data, for example AUROC with one class."""
 
@@ -120,6 +129,8 @@ class Scorer(ABC):
     metrics: ClassVar[tuple[str, ...]]
     lower_is_better: ClassVar[frozenset[str]] = frozenset()
     wants_predictions: ClassVar[bool] = False
+    wants_cases: ClassVar[bool] = False
+    needs_judge: ClassVar[bool] = False
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -151,6 +162,9 @@ class Scorer(ABC):
     def available_metrics(self) -> tuple[str, ...]:
         """The metrics on offer. Override when params decide them."""
         return self.metrics
+
+    def health(self) -> ScorerHealth:
+        return ScorerHealth()
 
     def is_lower_better(self, metric: str) -> bool:
         return metric in self.lower_is_better

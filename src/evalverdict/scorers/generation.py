@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
@@ -11,7 +13,14 @@ from pydantic import Field
 from evalverdict._optional import optional_import
 from evalverdict.engines import bertscore
 from evalverdict.engines.bertscore import Backend
-from evalverdict.scoring.base import Family, ItemValues, Scorer
+from evalverdict.engines.deepeval_judge import JudgeParseError, judge_item
+from evalverdict.engines.judge_client import (
+    JudgeBackend,
+    JudgeBudgetStop,
+    JudgeCallError,
+)
+from evalverdict.rubric import load_rubric
+from evalverdict.scoring.base import Family, ItemValues, Scorer, ScorerHealth
 from evalverdict.scoring.registry import register_scorer
 
 
@@ -77,3 +86,109 @@ class BertScoreScorer(Scorer):
             backend=self.params.backend,
         )
         return ItemValues(arrays={"precision": precision, "recall": recall, "f1": f1})
+
+
+def vendor_of(model: str) -> str:
+    parts = model.split("/")
+    return parts[1] if parts[0] == "openrouter" and len(parts) > 2 else parts[0]
+
+
+def base_model(model: str) -> str:
+    return model.rsplit("/", 1)[-1]
+
+
+@register_scorer("judge")
+class JudgeScorer(Scorer):
+    """LLM-as-judge against a rubric. One judge call per item."""
+
+    family = Family.GENERATION
+    metrics = ("score",)
+    wants_cases = True
+    needs_judge = True
+
+    class Params(Scorer.Params):
+        rubric: Path
+        threshold: float = Field(default=0.5, ge=0, le=1)
+        strict_mode: bool = False
+        judge_model: str | None = None
+        concurrency: int = Field(default=4, gt=0)
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.rubric = load_rubric(self.params.rubric)
+        self.backend: JudgeBackend | None = None
+        self.judge_model = ""
+        self.target_models: list[str] = []
+        self._health = ScorerHealth()
+
+    def check_dependencies(self) -> None:
+        optional_import("deepeval")
+
+    def bind_judge(
+        self, backend: JudgeBackend, judge_model: str, target_models: Sequence[str]
+    ) -> None:
+        self.backend = backend
+        self.judge_model = judge_model
+        self.target_models = list(target_models)
+
+    def health(self) -> ScorerHealth:
+        return self._health
+
+    def item_values(
+        self, predictions: Sequence[Any], references: Sequence[Any], metadata: Any
+    ) -> ItemValues:
+        if self.backend is None:
+            raise ValueError("the judge scorer needs a judge")
+        backend = self.backend
+
+        def judge(index: int) -> tuple[float, str]:
+            score, reason = judge_item(
+                backend,
+                self.rubric,
+                case_input=metadata[index].input,
+                output=str(predictions[index]),
+                reference=references[index],
+                threshold=self.params.threshold,
+            )
+            if self.params.strict_mode:
+                score = float(score >= self.params.threshold)
+            return score, reason
+
+        scores = np.full(len(predictions), np.nan)
+        details: list[dict[str, Any]] = [{} for _ in predictions]
+        failed = 0
+        stop_reason = None
+        with ThreadPoolExecutor(max_workers=self.params.concurrency) as pool:
+            futures = [pool.submit(judge, index) for index in range(len(predictions))]
+            for index, future in enumerate(futures):
+                try:
+                    scores[index], reason = future.result()
+                    details[index] = {"reason": reason}
+                except JudgeBudgetStop:
+                    stop_reason = "budget"
+                except (JudgeCallError, JudgeParseError) as error:
+                    failed += 1
+                    details[index] = {"judge_failure": type(error).__name__}
+        self._health = ScorerHealth(failed, len(predictions), stop_reason)
+
+        judge_vendor = vendor_of(self.judge_model)
+        return ItemValues(
+            arrays={"score": scores},
+            details=details,
+            sparse=frozenset(self.metrics),
+            result_details={
+                "rubric_name": self.rubric.name,
+                "rubric_version": self.rubric.version,
+                "rubric_text": self.rubric.text,
+                "rubric_sha256": self.rubric.sha256,
+                "judge_model": self.judge_model,
+                "self_judging": any(
+                    base_model(model) == base_model(self.judge_model)
+                    for model in self.target_models
+                ),
+                "shared_vendor_with": [
+                    model for model in self.target_models if vendor_of(model) == judge_vendor
+                ],
+                "judge_failures": failed,
+            },
+        )

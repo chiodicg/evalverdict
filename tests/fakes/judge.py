@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -17,6 +19,13 @@ class StubJudge:
         self._scores = list(scores)
         self._reasons = list(reasons) if reasons is not None else ["scripted"] * len(self._scores)
         self.prompts: list[str] = []
+        self._lock = threading.Lock()
+
+    def complete(self, prompt: str) -> str:
+        """Reply as a judge model would, with a 0-10 score in JSON."""
+        with self._lock:
+            decision = self.score(prompt)
+        return json.dumps({"reason": decision.reason, "score": decision.score * 10})
 
     def score(self, prompt: str) -> JudgeDecision:
         position = len(self.prompts)
