@@ -22,6 +22,7 @@ from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
 from evalverdict.engines.judge_client import JudgeClient
 from evalverdict.scorers.generation import base_model
 from evalverdict.scoring.base import Scorer
+from evalverdict.scoring.gates import INVALID, apply_gates, overall_outcome
 from evalverdict.scoring.registry import build_scorer
 from evalverdict.targets.base import Target, build_target
 from evalverdict.targets.litellm_target import LiteLLMTarget, apply_shared_sampling
@@ -239,8 +240,14 @@ def _write_target_run(
     disabled = [entry.resolved_name for entry in config.scorers if not entry.enabled]
     results = _score(collected, dataset, config, scorers)
     summary = _summary(collected, dataset, config, scorers)
+    gates = apply_gates(config.gates, results)
+    summary["outcome"] = (
+        INVALID
+        if summary["status"] != STATUS_COMPLETE
+        else overall_outcome(gate["outcome"] for gate in gates)
+    )
     (folder / "scores.json").write_text(
-        _dump({"results": results, "disabled": disabled, "run": summary})
+        _dump({"results": results, "disabled": disabled, "gates": gates, "run": summary})
     )
     (folder / "predictions.jsonl").write_text(
         "".join(
@@ -252,6 +259,7 @@ def _write_target_run(
         "name": config.name,
         "created_at": created_at,
         "status": summary["status"],
+        "outcome": summary["outcome"],
         "target": target_name,
         "target_config": config.targets[target_name].model_dump(mode="json"),
         "config_sha256": config.sha256(),
@@ -357,8 +365,37 @@ def run_statuses(run_dir: Path) -> dict[str, str]:
     }
 
 
-def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | None = None) -> Path:
-    """Run every target. All setup errors surface before any model call or output."""
+@dataclass
+class Prepared:
+    """Everything a run needs, checked and built, with no model call made."""
+
+    config: RunConfig
+    dataset: Dataset
+    scorers: dict[str, Scorer]
+    targets: dict[str, Target]
+    judges: list[JudgeClient]
+    cache: ResponseCache
+    budget: Budget
+    dropped: list[str]
+
+
+def _check_gates(config: RunConfig, scorers: dict[str, Scorer]) -> None:
+    problems = []
+    for key in config.gates:
+        scorer_name, _, metric = key.partition(".")
+        scorer = scorers.get(scorer_name)
+        if scorer is None:
+            enabled = sorted(scorers)
+            problems.append(f"gate {key}: no enabled scorer {scorer_name!r} (enabled: {enabled})")
+        elif metric not in scorer.selected_metrics:
+            options = list(scorer.selected_metrics)
+            problems.append(f"gate {key}: metric {metric!r} is not produced; options: {options}")
+    if problems:
+        raise ValueError("; ".join(problems))
+
+
+def prepare(config: RunConfig, resume: Path | None = None) -> Prepared:
+    """Load, build and check everything. Raises before any model call or output."""
     dataset = load_dataset(config.dataset)
     if resume is not None:
         _check_resume(resume, config, dataset)
@@ -367,24 +404,40 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
         for entry in config.scorers
         if entry.enabled
     }
+    _check_gates(config, scorers)
     targets = {name: build_target(target) for name, target in config.targets.items()}
     _check_targets(config, targets)
     dropped = apply_shared_sampling(targets, config.sampling)
     cache = ResponseCache(config.cache_dir)
     budget = Budget(config.budget_usd)
     judges = _bind_judges(config, scorers, cache, budget)
+    return Prepared(config, dataset, scorers, targets, judges, cache, budget, dropped)
+
+
+def run_outcomes(run_dir: Path) -> dict[str, str]:
+    """The gate outcome of each target in a run."""
+    return {
+        path.parent.name: json.loads(path.read_text())["outcome"]
+        for path in sorted(run_dir.glob("*/manifest.json"))
+    }
+
+
+def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | None = None) -> Path:
+    """Run every target. All setup errors surface before any model call or output."""
+    ready = prepare(config, resume)
+    dataset, scorers, judges = ready.dataset, ready.scorers, ready.judges
 
     now = datetime.now(UTC)
     run_dir = resume or runs_root / f"{now:%Y%m%dT%H%M%S%fZ}-{config.name}"
-    for name, target in targets.items():
+    for name, target in ready.targets.items():
         target_config = config.targets[name].model_dump(mode="json")
         identity = {**target_config, "parameters_sent": target.parameters_sent()}
-        collected = _collect(target, identity, dataset.cases, config, cache, budget)
+        collected = _collect(target, identity, dataset.cases, config, ready.cache, ready.budget)
         written = _write_target_run(
             run_dir / name, config, dataset, name, collected, scorers, now.isoformat()
         )
         written["parameters_sent"] = target.parameters_sent()
-        written["sampling_dropped"] = dropped
+        written["sampling_dropped"] = ready.dropped
         if config.judge is not None:
             written["judge"] = {
                 "model": config.judge.model,

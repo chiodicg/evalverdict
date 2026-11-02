@@ -298,7 +298,7 @@ Tested 2026-10-31 on a real install (Python 3.12, macOS), offline and with no pa
 | Self-hosted Langfuse runs six services. Langfuse recommends 4 cores and 16 GiB; this Mac has 16 GB, and Docker is allowed 3.53 GiB | The recommendation is not a tested minimum for a demo. Raise Docker's memory (8 GiB is a starting point), and test it alongside BERTScore. If it won't fit, run tracing separately from the BERTScore step or use `mode: cloud`. |
 | Upstream Compose defaults include placeholder secrets and expose some ports | Ship `deploy/langfuse/` with a pinned image version, generated secrets in a gitignored `.env`, and all ports bound to `127.0.0.1`. |
 | Red-team prompts are harmful by design and go through your own provider accounts | Check each provider's usage terms before the first adversarial run, keep suites small, and run them only with approval. |
-| Third-party telemetry on a public tool | Disable it by default where supported and document what each library sends. DeepEval's opt-out flag is set in the test, but its effect is unconfirmed. |
+| Third-party telemetry on a public tool | Disable it by default where supported and document what each library sends. DeepEval's opt-out is set before every import, and the network guard saw no request during judged scoring. |
 | Latency differences reflect time of day, region or load | Report concurrency and timing window; treat cross-provider latency as indicative. |
 
 ## Testing Strategy

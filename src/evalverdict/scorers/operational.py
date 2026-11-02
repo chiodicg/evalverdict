@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from pydantic import Field, field_validator
 
 from evalverdict.data import Prediction
-from evalverdict.scoring.base import Family, ItemValues, Scorer
+from evalverdict.scoring.base import ContractExample, Family, ItemValues, Scorer
 from evalverdict.scoring.registry import register_scorer
 
 
@@ -34,6 +34,19 @@ class LatencyScorer(Scorer):
             if any(not 0 <= value <= 100 for value in values):
                 raise ValueError("percentiles must be between 0 and 100")
             return values
+
+    @classmethod
+    def contract_example(cls) -> ContractExample:
+        items = [
+            Prediction(
+                case_id=str(index),
+                latency_s=0.5 + index / 10,
+                ttft_s=0.1 + index / 50,
+                throughput_tokens_per_s=40.0 + index,
+            )
+            for index in range(5)
+        ]
+        return ContractExample(params={}, predictions=items, references=[None] * 5)
 
     def available_metrics(self) -> tuple[str, ...]:
         labels = [f"{value:g}" for value in self.params.percentiles]
@@ -71,6 +84,11 @@ class CostScorer(Scorer):
     metrics = ("cost_per_prediction_usd",)
     lower_is_better = frozenset(metrics)
     wants_predictions = True
+
+    @classmethod
+    def contract_example(cls) -> ContractExample:
+        items = [Prediction(case_id=str(index), cost_usd=0.001 * (index + 1)) for index in range(4)]
+        return ContractExample(params={}, predictions=items, references=[None] * 4)
 
     def item_values(
         self, predictions: Sequence[Prediction], references: Sequence[Any], metadata: Any

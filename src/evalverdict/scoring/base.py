@@ -36,6 +36,16 @@ class Family(StrEnum):
 
 
 @dataclass(frozen=True)
+class ContractExample:
+    """Small inputs each scorer supplies so the shared contract test can run it."""
+
+    params: Mapping[str, Any]
+    predictions: Sequence[Any]
+    references: Sequence[Any]
+    metadata: Any = None
+
+
+@dataclass(frozen=True)
 class ScorerHealth:
     """Problems a scorer met that affect how far its results can be trusted."""
 
@@ -131,6 +141,7 @@ class Scorer(ABC):
     wants_predictions: ClassVar[bool] = False
     wants_cases: ClassVar[bool] = False
     needs_judge: ClassVar[bool] = False
+    judge_calls_per_item: ClassVar[int] = 0
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -162,6 +173,10 @@ class Scorer(ABC):
     def available_metrics(self) -> tuple[str, ...]:
         """The metrics on offer. Override when params decide them."""
         return self.metrics
+
+    @classmethod
+    def contract_example(cls) -> ContractExample:
+        raise NotImplementedError(f"{cls.__name__} needs a contract_example()")
 
     def health(self) -> ScorerHealth:
         return ScorerHealth()

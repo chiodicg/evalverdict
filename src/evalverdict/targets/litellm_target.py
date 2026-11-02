@@ -112,6 +112,16 @@ class LiteLLMTarget:
         total = float(prompt) + float(completion)
         return total if total > 0 else None
 
+    def estimate_call_usd(self, input_tokens: int, output_tokens: int) -> float | None:
+        mapped = self._mapped_cost(input_tokens, output_tokens)
+        if mapped is not None:
+            return mapped
+        pricing = self.options.pricing
+        if pricing is None:
+            return None
+        total = input_tokens * pricing.input_per_mtok + output_tokens * pricing.output_per_mtok
+        return total / MILLION
+
     def _cost(self, usage: Any) -> tuple[float | None, str]:
         """Provider figure, then mapped price, then config price, otherwise not measured."""
         if usage is None:

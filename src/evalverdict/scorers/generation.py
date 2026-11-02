@@ -11,6 +11,7 @@ import numpy as np
 from pydantic import Field
 
 from evalverdict._optional import optional_import
+from evalverdict.data import TestCase
 from evalverdict.engines import bertscore
 from evalverdict.engines.bertscore import Backend
 from evalverdict.engines.deepeval_judge import JudgeParseError, judge_item
@@ -20,7 +21,7 @@ from evalverdict.engines.judge_client import (
     JudgeCallError,
 )
 from evalverdict.rubric import load_rubric
-from evalverdict.scoring.base import Family, ItemValues, Scorer, ScorerHealth
+from evalverdict.scoring.base import ContractExample, Family, ItemValues, Scorer, ScorerHealth
 from evalverdict.scoring.registry import register_scorer
 
 
@@ -32,6 +33,14 @@ class RougeScorer(Scorer):
     class Params(Scorer.Params):
         use_stemmer: bool = False
         backend: Literal["rouge_score", "evaluate"] = "rouge_score"
+
+    @classmethod
+    def contract_example(cls) -> ContractExample:
+        return ContractExample(
+            params={},
+            predictions=["the cat sat", "dogs bark", "rain again"],
+            references=["a cat sat", "the dog barks", "sunny today"],
+        )
 
     def check_dependencies(self) -> None:
         optional_import(self.params.backend)
@@ -72,6 +81,11 @@ class BertScoreScorer(Scorer):
         batch_size: int = Field(default=32, gt=0)
         backend: Backend = "bert_score"
 
+    @classmethod
+    def contract_example(cls) -> ContractExample:
+        """Empty text scores 0 without loading a model, which keeps this test fast."""
+        return ContractExample(params={}, predictions=["", ""], references=["a", "b"])
+
     def check_dependencies(self) -> None:
         optional_import(self.params.backend)
 
@@ -105,6 +119,7 @@ class JudgeScorer(Scorer):
     metrics = ("score",)
     wants_cases = True
     needs_judge = True
+    judge_calls_per_item = 1
 
     class Params(Scorer.Params):
         rubric: Path
@@ -120,6 +135,17 @@ class JudgeScorer(Scorer):
         self.judge_model = ""
         self.target_models: list[str] = []
         self._health = ScorerHealth()
+
+    @classmethod
+    def contract_example(cls) -> ContractExample:
+        rubric = Path(__file__).resolve().parents[3] / "rubrics" / "summary_quality.yaml"
+        cases = [TestCase(id=f"c{index}", input=f"source {index}") for index in range(3)]
+        return ContractExample(
+            params={"rubric": str(rubric), "concurrency": 1},
+            predictions=["summary a", "summary b", "summary c"],
+            references=["ref a", "ref b", "ref c"],
+            metadata=cases,
+        )
 
     def check_dependencies(self) -> None:
         optional_import("deepeval")
