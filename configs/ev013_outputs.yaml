@@ -1,0 +1,24 @@
+# EV-013 cost sample. Outputs are cached, so the main run reuses them.
+name: ev013-outputs
+seed: 42
+dataset: datasets/summaries.jsonl
+dataset_attribution: Contains public sector information licensed under the Open Government Licence v3.0.
+budget_usd: 1.00
+concurrency: 4
+targets:
+  baseline:
+    kind: litellm
+    model: anthropic/claude-haiku-5-5
+    system_prompt: Summarise this GOV.UK guidance page in one sentence of at most 30 words. Reply with the sentence only.
+    max_tokens: 1024
+  candidate:
+    kind: litellm
+    model: openai/gpt-6-luna
+    system_prompt: Summarise this GOV.UK guidance page in one sentence of at most 30 words. Reply with the sentence only.
+    max_tokens: 1024
+judge:
+  model: anthropic/claude-sonnet-5-5
+scorers:
+  - {type: rouge, metrics: [rougeL]}
+  - {type: latency}
+  - {type: cost}

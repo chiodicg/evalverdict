@@ -6,6 +6,8 @@ match the files exactly; tests check this.
 | File | Rows | SHA-256 | Licence |
 |---|---|---|---|
 | summaries.jsonl | 200 | 42ee63f300e118a33570f1f6108a8a8afadd64d62f7d836399640b4e4ee5c403 | Open Government Licence v3.0 |
+| summaries_sample20.jsonl | 20 | ede6d0eb57a5975408158997da980555bebfe6e3150943a2940fedd2cd9f16c0 | Open Government Licence v3.0 |
+| summaries_repeat30.jsonl | 30 | 34d66cbae157824cb3d1d1e3380cc142778c7ed29c1c6b8fbdb70fd14f227841 | Open Government Licence v3.0 |
 
 ## summaries.jsonl
 
@@ -26,3 +28,19 @@ match the files exactly; tests check this.
 - **Rebuilding:** GOV.UK pages change, so a rebuild may differ. The committed file is the
   reference, and its hash is recorded above.
 - **Approval:** Carla chose this source and licence on 2026-11-02.
+
+## summaries_sample20.jsonl
+
+- **Source:** a subset of `summaries.jsonl`, so the same GOV.UK pages, attribution and changes apply.
+- **Licence:** Open Government Licence v3.0.
+- **Build:** shuffle the rows of `summaries.jsonl` with `random.Random(13)` and keep the first 20, in file order.
+- **Use:** EV-013's judge cost sample, so real token counts are measured before the main run.
+- **Approval:** covered by Carla's choice of the GOV.UK source on 2026-11-02.
+
+## summaries_repeat30.jsonl
+
+- **Source:** a subset of `summaries.jsonl`, so the same GOV.UK pages, attribution and changes apply.
+- **Licence:** Open Government Licence v3.0.
+- **Build:** the same shuffle as `summaries_sample20.jsonl`, keeping the first 30, so it contains those 20.
+- **Use:** EV-013's repeat check, which runs each item 3 times to measure run-to-run variation.
+- **Approval:** covered by Carla's choice of the GOV.UK source on 2026-11-02.

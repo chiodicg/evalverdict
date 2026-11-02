@@ -79,14 +79,14 @@ def test_throughput_is_the_mean_and_higher_is_better() -> None:
 @pytest.mark.ticket("EV-007-T13")
 def test_cost_per_prediction_shows_its_source() -> None:
     items = [
-        Prediction(case_id="a", cost_usd=0.01, cost_source="provider"),
-        Prediction(case_id="b", cost_usd=0.03, cost_source="provider"),
+        Prediction(case_id="a", cost_usd=0.01, cost_source="response_usage"),
+        Prediction(case_id="b", cost_usd=0.03, cost_source="response_usage"),
     ]
 
     result = score(CostScorer(), items)["cost_per_prediction_usd"]
 
     assert result.value == pytest.approx(0.02)
-    assert result.details["cost_sources"] == ["provider"]
+    assert result.details["cost_sources"] == ["response_usage"]
     assert result.higher_is_better is False
 
 
