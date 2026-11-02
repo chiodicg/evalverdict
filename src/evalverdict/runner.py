@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import platform
 import subprocess
+import time
 from collections import deque
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from concurrent.futures import FIRST_COMPLETED, Future, wait
 from dataclasses import asdict, dataclass, field, replace
 from datetime import UTC, datetime
 from importlib import metadata
@@ -17,6 +19,7 @@ import numpy as np
 
 from evalverdict.budget import Budget
 from evalverdict.cache import ResponseCache, cache_key
+from evalverdict.concurrency import POLL_S, spawn
 from evalverdict.config import RunConfig, ScorerEntry, TargetConfig
 from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
 from evalverdict.engines.judge_client import JudgeClient
@@ -34,6 +37,7 @@ STATUS_INCOMPLETE = "incomplete"
 STATUS_INVALID = "invalid"
 STOP_BUDGET = "budget"
 STOP_INTERRUPTED = "interrupted"
+INTERRUPT_GRACE_S = 5.0
 
 VERSIONED_PACKAGES = (
     "evalverdict",
@@ -87,8 +91,22 @@ def _collect(
             else:
                 jobs.append((order, case, repeat, key))
 
-    pending: dict[Future[Prediction], tuple[int, int, str]] = {}
-    pool = ThreadPoolExecutor(max_workers=config.concurrency)
+    pending: dict[Future[Prediction], tuple[int, int, str, str, float]] = {}
+
+    def record(order: int, repeat: int, key: str, prediction: Prediction) -> None:
+        prediction = replace(prediction, repeat=repeat)
+        budget.settle(prediction.cost_usd)
+        collected.calls += 1
+        collected.spend_usd += prediction.cost_usd or 0.0
+        collected.unmeasured_calls += target.paid and prediction.cost_usd is None
+        cache.put(key, prediction)
+        finished[order] = prediction
+
+    def collect_done(done: set[Future[Prediction]]) -> None:
+        for future in done:
+            order, repeat, key, _, _ = pending.pop(future)
+            record(order, repeat, key, future.result())
+
     try:
         while (jobs or pending) and collected.stop_reason is None:
             while jobs and len(pending) < config.concurrency:
@@ -97,23 +115,23 @@ def _collect(
                         collected.stop_reason = STOP_BUDGET
                     break
                 order, case, repeat, key = jobs.popleft()
-                pending[pool.submit(target.predict, case)] = (order, repeat, key)
+                future = spawn(target.predict, case)
+                pending[future] = (order, repeat, key, case.id, time.monotonic())
             if not pending:
                 break
-            done, _ = wait(pending, return_when=FIRST_COMPLETED)
-            for future in done:
-                order, repeat, key = pending.pop(future)
-                prediction = replace(future.result(), repeat=repeat)
-                budget.settle(prediction.cost_usd)
-                collected.calls += 1
-                collected.spend_usd += prediction.cost_usd or 0.0
-                collected.unmeasured_calls += target.paid and prediction.cost_usd is None
-                cache.put(key, prediction)
-                finished[order] = prediction
+            done, _ = wait(pending, timeout=POLL_S, return_when=FIRST_COMPLETED)
+            collect_done(done)
+            now = time.monotonic()
+            for future, (order, repeat, key, case_id, started) in list(pending.items()):
+                if now - started > config.call_deadline_s:
+                    pending.pop(future)
+                    record(order, repeat, key, Prediction(case_id=case_id, error="Stalled"))
     except KeyboardInterrupt:
         collected.stop_reason = STOP_INTERRUPTED
-    finally:
-        pool.shutdown(wait=True, cancel_futures=True)
+        # Give calls already in flight a moment, so their cost is still recorded.
+        done, _ = wait(pending, timeout=INTERRUPT_GRACE_S)
+        with contextlib.suppress(KeyboardInterrupt):
+            collect_done({future for future in done if future.exception() is None})
 
     collected.predictions = [finished[order] for order in sorted(finished)]
     return collected

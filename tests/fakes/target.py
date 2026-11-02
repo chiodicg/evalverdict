@@ -87,6 +87,7 @@ class CaseTarget:
         cost_known: bool = True,
         delay_s: float = 0.0,
         interrupt_on: str | None = None,
+        block_on: str | None = None,
     ) -> None:
         self.responses = responses or {}
         self.default = default or FakeResponse(output="answer")
@@ -94,6 +95,8 @@ class CaseTarget:
         self.cost_known = cost_known
         self.delay_s = delay_s
         self.interrupt_on = interrupt_on
+        self.block_on = block_on
+        self.release = threading.Event()
         self.calls: list[str] = []
         self.max_in_flight = 0
         self._in_flight = 0
@@ -110,6 +113,8 @@ class CaseTarget:
             self._in_flight += 1
             self.max_in_flight = max(self.max_in_flight, self._in_flight)
         time.sleep(self.delay_s)
+        if case.id == self.block_on:
+            self.release.wait()
         with self._lock:
             self._in_flight -= 1
         response = self.responses.get(case.id, self.default)

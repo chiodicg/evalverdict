@@ -3,7 +3,7 @@ name: ev013-repeats
 seed: 42
 dataset: datasets/summaries_repeat30.jsonl
 dataset_attribution: Contains public sector information licensed under the Open Government Licence v3.0.
-budget_usd: 1.50
+budget_usd: 3.00
 concurrency: 4
 targets:
   baseline:

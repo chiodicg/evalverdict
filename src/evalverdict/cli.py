@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import faulthandler
+import io
 import json
+import signal
+import sys
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -38,10 +42,21 @@ def _fail(error: Exception) -> typer.Exit:
     return typer.Exit(EXIT_INVALID)
 
 
+def _enable_stack_dumps() -> None:
+    """`kill -USR1 <pid>` prints every thread's stack, to diagnose a stuck run."""
+    if not hasattr(signal, "SIGUSR1") or sys.__stderr__ is None:
+        return
+    try:
+        faulthandler.register(signal.SIGUSR1, file=sys.__stderr__, all_threads=True)
+    except (OSError, ValueError, io.UnsupportedOperation):
+        return  # No real stderr, for example under a test runner.
+
+
 @app.callback()
 def main() -> None:
     """Evaluate models and decide whether to change them."""
     load_env()
+    _enable_stack_dumps()
 
 
 @app.command()

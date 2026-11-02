@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Literal
 
@@ -11,6 +10,7 @@ import numpy as np
 from pydantic import Field
 
 from evalverdict._optional import optional_import
+from evalverdict.concurrency import StalledError, run_all
 from evalverdict.data import TestCase
 from evalverdict.engines import bertscore
 from evalverdict.engines.bertscore import Backend
@@ -127,6 +127,7 @@ class JudgeScorer(Scorer):
         strict_mode: bool = False
         judge_model: str | None = None
         concurrency: int = Field(default=4, gt=0)
+        call_deadline_s: float = Field(default=600, gt=0)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -184,17 +185,20 @@ class JudgeScorer(Scorer):
         details: list[dict[str, Any]] = [{} for _ in predictions]
         failed = 0
         stop_reason = None
-        with ThreadPoolExecutor(max_workers=self.params.concurrency) as pool:
-            futures = [pool.submit(judge, index) for index in range(len(predictions))]
-            for index, future in enumerate(futures):
-                try:
-                    scores[index], reason = future.result()
-                    details[index] = {"reason": reason}
-                except JudgeBudgetStop:
-                    stop_reason = "budget"
-                except (JudgeCallError, JudgeParseError) as error:
-                    failed += 1
-                    details[index] = {"judge_failure": type(error).__name__}
+        outcomes = run_all(
+            judge, range(len(predictions)), self.params.concurrency, self.params.call_deadline_s
+        )
+        for index, (outcome, error) in enumerate(outcomes):
+            if error is None and outcome is not None:
+                scores[index], reason = outcome
+                details[index] = {"reason": reason}
+            elif isinstance(error, JudgeBudgetStop):
+                stop_reason = "budget"
+            elif isinstance(error, (JudgeCallError, JudgeParseError, StalledError)):
+                failed += 1
+                details[index] = {"judge_failure": type(error).__name__}
+            elif error is not None:
+                raise error
         self._health = ScorerHealth(failed, len(predictions), stop_reason)
 
         judge_vendor = vendor_of(self.judge_model)
