@@ -69,3 +69,33 @@ def test_report_on_a_folder_that_is_not_a_run_exits_three(tmp_path: Path) -> Non
     result = runner.invoke(app, ["report", str(tmp_path)])
 
     assert result.exit_code == 3
+
+
+@pytest.mark.ticket("EV-014-T17")
+def test_run_with_a_judge_and_no_labels_reports_agreement_as_unmeasured(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from evalverdict.config import RunConfig
+    from evalverdict.runner import execute
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "data.jsonl").write_text('{"id": "a", "input": "src", "reference": "ref"}\n')
+    INSTANCES["b"] = CaseTarget(default=FakeResponse(output="summary"))
+    rubric = Path(__file__).resolve().parents[2] / "rubrics" / "summary_quality.yaml"
+    reply = json.dumps({"reason": "ok", "score": 7})
+    config = RunConfig(
+        name="demo",
+        dataset=tmp_path / "data.jsonl",
+        targets={"a": {"kind": "instance", "ref": "b", "model": "x/y"}},
+        judge={"model": "judge/model", "params": {"mock_response": reply}},
+        scorers=[{"type": "judge", "params": {"rubric": str(rubric)}}],
+        bootstrap={"n_resamples": 20},
+    )
+
+    run_dir = execute(config)
+
+    assert (
+        "judge agreement is unmeasured"
+        in json.loads((run_dir / "agreement.json").read_text())[0]["reason"]
+    )
+    assert "judge agreement is unmeasured" in (run_dir / "a" / "report.html").read_text()

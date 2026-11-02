@@ -117,9 +117,10 @@
 </section>
 {% endfor %}
 
-{% if agreement %}
+{% if agreement or agreement_unmeasured %}
 <section>
 <h2>Judge agreement</h2>
+{% for result in agreement_unmeasured %}<p class="disclosure">{{ result.details.title if result.details else "Judge agreement" }}: {{ result.reason }}.</p>{% endfor %}
 {% for result in agreement %}
 <h3>{{ provenance_titles.get(result.details.provenance, result.details.provenance) }}</h3>
 <p><span class="headline">{{ format_score(result.value, result.ci.low, result.ci.high, result.n) }}</span> weighted kappa · {{ interval_text(result.ci) }}{% if result.details.provenance == "ai_draft_human_reviewed" %} · {{ result.details.n_changed_in_review }} changed in review{% endif %}</p>

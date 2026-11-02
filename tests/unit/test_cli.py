@@ -141,3 +141,11 @@ def test_compare_refusal_exits_three(tmp_path: Path) -> None:
     result = runner.invoke(app, ["compare", str(tmp_path / "x"), str(tmp_path / "y")])
 
     assert result.exit_code == 3
+
+
+@pytest.mark.ticket("EV-009-T28")
+@pytest.mark.parametrize(
+    "command", [["labels"], ["labels", "sample"], ["labels", "export-review"], ["labels", "import"]]
+)
+def test_labels_commands_have_help(command: list[str]) -> None:
+    assert runner.invoke(app, [*command, "--help"]).exit_code == 0

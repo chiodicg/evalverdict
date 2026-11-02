@@ -15,8 +15,17 @@ from pydantic import ValidationError
 
 from evalverdict._optional import MissingExtraError
 from evalverdict.config import load_config
+from evalverdict.data import load_dataset
 from evalverdict.env import load_env
 from evalverdict.estimate import estimate_run
+from evalverdict.labelling import (
+    HUMAN_FILE,
+    REVIEW_FILE,
+    TO_DRAFT_FILE,
+    export_review,
+    import_labels,
+    sample_items,
+)
 from evalverdict.report.render import write_reports
 from evalverdict.runner import execute, prepare, run_outcomes
 from evalverdict.scoring.compare import compare_runs
@@ -35,6 +44,8 @@ app = typer.Typer(
 )
 scorers_app = typer.Typer(no_args_is_help=True, help="List scorers and their settings.")
 app.add_typer(scorers_app, name="scorers")
+labels_app = typer.Typer(no_args_is_help=True, help="Blind labelling for judge agreement.")
+app.add_typer(labels_app, name="labels")
 
 
 def _fail(error: Exception) -> typer.Exit:
@@ -134,6 +145,52 @@ def report(
         raise _fail(error) from error
     for path in written:
         typer.echo(f"Wrote {path}")
+
+
+@labels_app.command("sample")
+def labels_sample(
+    run_dir: Annotated[Path, typer.Argument(help="A run with two targets and no judge scores.")],
+    out: Annotated[Path, typer.Option(help="Folder for the labelling files.")] = Path("labels"),
+    exclude_dataset: Annotated[
+        Path | None, typer.Option(help="Leave out every case in this dataset file.")
+    ] = None,
+    n: Annotated[int, typer.Option(help="Items to label in total.")] = 50,
+    human: Annotated[int, typer.Option(help="Items labelled independently by a person.")] = 15,
+    seed: Annotated[int, typer.Option(help="Seed for the sample.")] = 7,
+) -> None:
+    """Pick items and write blind labelling files. Model identity goes in a private key."""
+    try:
+        exclude = (
+            {case.id for case in load_dataset(exclude_dataset).cases} if exclude_dataset else set()
+        )
+        sample_items(run_dir, out, n=n, human_n=human, seed=seed, exclude=exclude)
+    except SETUP_ERRORS as error:
+        raise _fail(error) from error
+    typer.echo(f"Wrote {out / HUMAN_FILE} ({human} items) and {out / TO_DRAFT_FILE} ({n} items)")
+
+
+@labels_app.command("export-review")
+def labels_export_review(
+    folder: Annotated[Path, typer.Option("--dir", help="The labelling folder.")] = Path("labels"),
+) -> None:
+    """Write the drafts for review. Refused until the human labels and drafts are complete."""
+    try:
+        export_review(folder)
+    except SETUP_ERRORS as error:
+        raise _fail(error) from error
+    typer.echo(f"Wrote {folder / REVIEW_FILE}")
+
+
+@labels_app.command("import")
+def labels_import(
+    folder: Annotated[Path, typer.Option("--dir", help="The labelling folder.")] = Path("labels"),
+) -> None:
+    """Combine all labels with their provenance and record changes made in review."""
+    try:
+        summary = import_labels(folder)
+    except SETUP_ERRORS as error:
+        raise _fail(error) from error
+    typer.echo(f"Wrote {folder / 'labels.jsonl'}: {summary}")
 
 
 @scorers_app.command("list")

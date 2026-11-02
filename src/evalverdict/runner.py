@@ -24,6 +24,7 @@ from evalverdict.config import RunConfig, ScorerEntry, TargetConfig
 from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
 from evalverdict.engines.judge_client import JudgeClient
 from evalverdict.report.render import write_reports
+from evalverdict.scorers.agreement import agreement_results
 from evalverdict.scorers.generation import base_model
 from evalverdict.scoring.base import Scorer
 from evalverdict.scoring.compare import compare_runs
@@ -487,8 +488,28 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
         (run_dir / name / "manifest.json").write_text(_dump(written))
     if len(ready.targets) == 2:
         _write_comparison(run_dir, list(ready.targets))
+    _write_agreement(run_dir, config, scorers)
     write_reports(run_dir)
     return run_dir
+
+
+def _write_agreement(run_dir: Path, config: RunConfig, scorers: dict[str, Scorer]) -> None:
+    """With a judge, report agreement with labels, or say it is unmeasured (D13)."""
+    judge_names = [name for name, scorer in scorers.items() if scorer.needs_judge]
+    if not judge_names:
+        return
+    if config.labels is not None and config.labels.judge_scorer not in judge_names:
+        raise ValueError(
+            f"labels.judge_scorer {config.labels.judge_scorer!r} is not a judge scorer"
+        )
+    results = agreement_results(
+        run_dir,
+        config.labels.path if config.labels else None,
+        config.labels.judge_scorer if config.labels else judge_names[0],
+        config.bootstrap,
+        config.seed,
+    )
+    (run_dir / "agreement.json").write_text(_dump(results))
 
 
 def _write_comparison(run_dir: Path, names: list[str]) -> None:

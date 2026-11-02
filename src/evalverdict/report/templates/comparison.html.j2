@@ -31,6 +31,17 @@
 </table></div>
 {% endfor %}
 {% endif %}
+{% if agreement %}
+<h2>Judge agreement</h2>
+{% for result in agreement %}
+{% if result.value is defined %}
+<p><strong>{{ provenance_titles.get(result.details.provenance, result.details.provenance) }}</strong>: <span class="headline">{{ result.value | number }} [{{ result.ci.low | number }}, {{ result.ci.high | number }}] on n={{ result.n }}</span> weighted kappa{% if result.details.n_changed_in_review is not none and result.details.provenance == "ai_draft_human_reviewed" %} · {{ result.details.n_changed_in_review }} changed in review{% endif %}</p>
+{% else %}
+<p class="disclosure">{{ result.details.title if result.details else "Judge agreement" }}: {{ result.reason }}.</p>
+{% endif %}
+{% endfor %}
+<p class="muted">Each result uses different labels and is shown separately. Reviewed labels were drafted by AI, so they are not independent human judgement.</p>
+{% endif %}
 </main>
 </body>
 </html>

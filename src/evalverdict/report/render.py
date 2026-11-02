@@ -101,6 +101,11 @@ def render_target_report(folder: Path) -> str:
         families[result.get("family", "other")].append(result)
         if "rubric_text" in details:
             judges.append(result)
+    agreement_path = folder.parent / "agreement.json"
+    unmeasured: list[dict[str, Any]] = []
+    if agreement_path.is_file():
+        for result in json.loads(agreement_path.read_text()):
+            (agreement if "value" in result else unmeasured).append(result)
     cost_sources = sorted(
         {
             source
@@ -117,6 +122,7 @@ def render_target_report(folder: Path) -> str:
             gates=scores.get("gates", []),
             families=dict(families),
             agreement=agreement,
+            agreement_unmeasured=unmeasured,
             judges=judges,
             disabled=scores.get("disabled", []),
             cost_sources=cost_sources,
@@ -131,11 +137,15 @@ def render_target_report(folder: Path) -> str:
 def render_comparison_report(run_dir: Path) -> str:
     comparison = _read(run_dir, "comparison.json")
     metrics = comparison.get("metrics", [])
+    agreement_path = run_dir / "agreement.json"
+    agreement = json.loads(agreement_path.read_text()) if agreement_path.is_file() else []
     return (
         _environment()
         .get_template("comparison.html.j2")
         .render(
             comparison=comparison,
+            agreement=agreement,
+            provenance_titles=PROVENANCE_TITLES,
             primary=[item for item in metrics if item.get("primary")],
             secondary=[item for item in metrics if not item.get("primary")],
         )

@@ -87,6 +87,13 @@ class ReportConfig(BaseModel):
     max_items_shown: int = Field(default=20, ge=0)
 
 
+class LabelsConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    path: Path
+    judge_scorer: str
+
+
 class RunConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -100,6 +107,7 @@ class RunConfig(BaseModel):
     judge: JudgeConfig | None = None
     gates: dict[str, GateConfig] = Field(default_factory=dict)
     report: ReportConfig = Field(default_factory=ReportConfig)
+    labels: LabelsConfig | None = None
     sampling: dict[str, Any] = Field(default_factory=dict)
     budget_usd: float | None = Field(default=None, gt=0)
     max_error_rate: float = Field(default=0.05, ge=0, le=1)

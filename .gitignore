@@ -29,3 +29,6 @@ inspect_logs/
 .DS_Store
 .vscode/
 .idea/
+
+# Blind labelling key: stays private until labelling is complete
+labels/private/
