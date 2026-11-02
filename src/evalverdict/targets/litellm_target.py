@@ -123,12 +123,17 @@ class LiteLLMTarget:
         return total / MILLION
 
     def _cost(self, usage: Any) -> tuple[float | None, str]:
-        """Provider figure, then mapped price, then config price, otherwise not measured."""
+        """Cost on the response, then mapped price, then config price, otherwise not measured.
+
+        The response's cost is computed by LiteLLM from its price list on direct routes and
+        can come from the provider on OpenRouter; the two cannot be told apart, so the
+        source is named for where it was found, not who calculated it.
+        """
         if usage is None:
             return None, "not_measured"
         reported = getattr(usage, "cost", None)
         if reported:
-            return float(reported), "provider"
+            return float(reported), "response_usage"
         mapped = self._mapped_cost(usage.prompt_tokens, usage.completion_tokens)
         if mapped is not None:
             return mapped, "litellm_price"

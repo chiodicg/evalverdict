@@ -163,13 +163,13 @@ def test_missing_usage_is_not_measured_rather_than_zero() -> None:
 
 
 @pytest.mark.ticket("EV-005-T06")
-def test_provider_reported_cost_wins() -> None:
+def test_cost_on_the_response_wins() -> None:
     target = make_target(pricing={"input_per_mtok": 99, "output_per_mtok": 99})
     target.completion = replying(iter([chunk("x", usage=usage(cost=0.0123))]))
 
     prediction = target.predict(CASE)
 
-    assert (prediction.cost_usd, prediction.cost_source) == (0.0123, "provider")
+    assert (prediction.cost_usd, prediction.cost_source) == (0.0123, "response_usage")
 
 
 @pytest.mark.ticket("EV-005-T07")
