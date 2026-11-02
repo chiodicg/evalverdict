@@ -48,6 +48,7 @@ def test_run_writes_all_outputs_with_intervals(workspace: Path) -> None:
     assert {path.name for path in folder.iterdir()} == {
         "manifest.json",
         "predictions.jsonl",
+        "report.html",
         "scores.json",
     }
     score = json.loads((folder / "scores.json").read_text())["results"][0]

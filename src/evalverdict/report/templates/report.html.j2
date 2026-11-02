@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ manifest.name }}: {{ manifest.target }}</title>
+{% include "_style.html.j2" %}
+</head>
+<body>
+<main>
+<h1>{{ manifest.name }}: {{ manifest.target }}</h1>
+<p class="muted">{{ manifest.target_config.get("model", manifest.target_config.kind) }} · dataset {{ manifest.dataset.path }} ({{ manifest.dataset.n }} items) · seed {{ manifest.seed }}</p>
+{% if run.status == "invalid" %}
+<div class="banner banner-invalid">Invalid run: too many items failed, so these results must not be used to make a decision.</div>
+{% elif run.status == "incomplete" %}
+<div class="banner banner-incomplete">Incomplete run: stopped early ({{ run.stop_reason }}). Results cover {{ run.n_completed }} of {{ run.n_requested }} calls.</div>
+{% endif %}
+
+<section>
+<h2>Outcome</h2>
+<p>Overall: <span class="outcome outcome-{{ run.outcome }}">{{ run.outcome }}</span></p>
+{% if gates %}
+<div class="wrap"><table>
+<tr><th>Gate</th><th>Threshold</th><th>Mode</th><th>Role</th><th>Outcome</th></tr>
+{% for gate in gates %}
+<tr><td>{{ gate.key }}</td>
+<td>{% if gate.min is not none %}min {{ gate.min }}{% endif %}{% if gate.min is not none and gate.max is not none %}, {% endif %}{% if gate.max is not none %}max {{ gate.max }}{% endif %}</td>
+<td>{{ "whole interval" if gate.gate == "ci" else "point estimate" }}</td>
+<td>{{ "primary" if gate.primary else "secondary" }}</td>
+<td><span class="outcome outcome-{{ gate.outcome }}">{{ gate.outcome }}</span></td></tr>
+{% endfor %}
+</table></div>
+{% else %}
+<p class="muted">No gates are configured.</p>
+{% endif %}
+</section>
+
+<section>
+<h2>Run health</h2>
+<p>API errors {{ run.n_errors }} of {{ run.n_completed }} ({{ run.error_rate | percent }}) · Parse failures {{ run.n_parse_failures }} of {{ run.n_completed }} ({{ run.parse_failure_rate | percent }}) · Judge failures {{ run.judge_failures }}</p>
+<p>Target spend ${{ "%.4f" | format(manifest.spend.usd) }} over {{ manifest.spend.calls }} calls, {{ manifest.spend.cache_hits }} from cache{% if manifest.spend.unmeasured_calls %}, {{ manifest.spend.unmeasured_calls }} with cost not measured{% endif %}{% if manifest.judge %} · Judge spend ${{ "%.4f" | format(manifest.judge.spend_usd) }} over {{ manifest.judge.calls }} calls{% endif %}</p>
+{% if cost_sources %}<p class="muted">Cost sources: {{ cost_sources | join(", ") }}</p>{% endif %}
+</section>
+
+<section>
+<h2>Method notes</h2>
+{% if manifest.repeats > 1 %}
+<p class="disclosure">Each item was repeated {{ manifest.repeats }} times; intervals resample items with their repeats together, so they include variation between calls.</p>
+{% else %}
+<p class="disclosure">Intervals cover test-item sampling only, not variation between repeated calls to the same model.</p>
+{% endif %}
+{% if manifest.sampling_dropped %}
+<p class="disclosure">Sampling settings not accepted by every model were not sent, so models ran at provider defaults for: {{ manifest.sampling_dropped | join(", ") }}.</p>
+{% else %}
+<p class="disclosure">Only the settings below were sent; anything else ran at provider defaults.</p>
+{% endif %}
+<p class="muted">Sent: {% for name, value in (manifest.parameters_sent or {}).items() %}{{ name }} = {{ value }}{% if not loop.last %}, {% endif %}{% else %}nothing beyond the prompt{% endfor %}</p>
+{% for result in judges %}
+{% if result.details.self_judging %}
+<p class="disclosure disclosure-warning">This run was judged by a model under test ({{ result.details.judge_model }}). Scores may favour that model.</p>
+{% endif %}
+{% if result.details.shared_vendor_with %}
+<p class="disclosure">The judge ({{ result.details.judge_model }}) shares a vendor with {{ result.details.shared_vendor_with | join(", ") }}, which may favour that model's style.</p>
+{% endif %}
+{% endfor %}
+</section>
+
+{% for family, results in families.items() %}
+<section>
+<h2>{{ family | capitalize }}</h2>
+{% if family == "operational" %}<p class="muted">Measured with concurrency {{ manifest.concurrency }}, run started {{ manifest.created_at }}. Latency depends on load and region, so compare it between runs made close together.</p>{% endif %}
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Result</th><th>Interval</th><th>Direction</th></tr>
+{% for result in results %}
+{% if result.value is defined %}
+<tr><td>{{ result.scorer }}.{{ result.name }}</td>
+<td><span class="headline">{{ format_score(result.value, result.ci.low, result.ci.high, result.n) }}</span>{% for flag in result.flags %}<br><span class="flag">Note: {{ flag_text.get(flag, flag) }}</span>{% endfor %}</td>
+<td>{{ interval_text(result.ci) }}</td>
+<td>{{ "higher is better" if result.higher_is_better else "lower is better" }}</td></tr>
+{% else %}
+<tr><td>{{ result.scorer }}.{{ result.name }}</td><td colspan="3">Not measured: {{ result.reason }}</td></tr>
+{% endif %}
+{% endfor %}
+</table></div>
+{% for result in results if result.value is defined %}
+{% if result.details.confusion_matrix %}
+<h3>{{ result.scorer }}: confusion matrix</h3>
+<div class="wrap"><table>
+<tr><th>True \ Predicted</th>{% for label in result.details.labels %}<th>{{ label }}</th>{% endfor %}</tr>
+{% for row in result.details.confusion_matrix %}<tr><th>{{ result.details.labels[loop.index0] }}</th>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}
+</table></div>
+{% endif %}
+{% if result.details.reliability_bins %}
+<h3>{{ result.scorer }}: reliability</h3>
+<svg viewBox="0 0 220 140" width="320" role="img" aria-label="Reliability diagram: accuracy against confidence by bin">
+<line class="ideal" x1="20" y1="120" x2="200" y2="20"></line>
+{% for bin in result.details.reliability_bins %}
+<rect class="bar" x="{{ 20 + bin.low * 180 }}" y="{{ 120 - bin.accuracy * 100 }}" width="{{ (bin.high - bin.low) * 180 - 2 }}" height="{{ bin.accuracy * 100 }}"><title>{{ bin.low }}-{{ bin.high }}: accuracy {{ bin.accuracy }}, confidence {{ bin.confidence }}, {{ bin.count }} items</title></rect>
+{% endfor %}
+<text x="20" y="135">confidence 0 to 1</text>
+</svg>
+{% endif %}
+{% if result.per_item %}
+<details><summary>{{ result.scorer }}.{{ result.name }}: items</summary>
+<p class="muted">Showing {{ [max_items, result.per_item | length] | min }} of {{ result.per_item | length }} items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+{% for item in result.per_item[:max_items] %}
+<tr class="item"><td>{{ item.item_id }}</td><td>{{ item.value | number if item.value is not none else "not measured" }}</td><td>{% for key, value in (item.detail or {}).items() %}{{ key }}: {{ value }}{% if not loop.last %}; {% endif %}{% endfor %}</td></tr>
+{% endfor %}
+</table></div>
+</details>
+{% endif %}
+{% endfor %}
+</section>
+{% endfor %}
+
+{% if agreement %}
+<section>
+<h2>Judge agreement</h2>
+{% for result in agreement %}
+<h3>{{ provenance_titles.get(result.details.provenance, result.details.provenance) }}</h3>
+<p><span class="headline">{{ format_score(result.value, result.ci.low, result.ci.high, result.n) }}</span> weighted kappa · {{ interval_text(result.ci) }}{% if result.details.provenance == "ai_draft_human_reviewed" %} · {{ result.details.n_changed_in_review }} changed in review{% endif %}</p>
+{% for flag in result.flags %}<p class="flag">Note: {{ flag_text.get(flag, flag) }}</p>{% endfor %}
+{% endfor %}
+<p class="muted">Each result uses different labels and is shown separately. Reviewed labels were drafted by AI, so they are not independent human judgement.</p>
+</section>
+{% endif %}
+
+{% for result in judges %}
+<section>
+<h2>Rubric: {{ result.details.rubric_name }}</h2>
+<p class="muted">Judge {{ result.details.judge_model }} · rubric hash {{ result.details.rubric_sha256 }}</p>
+<pre>{{ result.details.rubric_text }}</pre>
+</section>
+{% endfor %}
+
+<section>
+<h2>Non-default settings</h2>
+{% if non_default %}<ul>{% for line in non_default %}<li>{{ line }}</li>{% endfor %}</ul>{% else %}<p class="muted">Every scorer used its defaults.</p>{% endif %}
+{% if disabled %}<p class="muted">Disabled: {{ disabled | join(", ") }}</p>{% endif %}
+</section>
+<p class="muted">evalverdict {{ manifest.versions.get("evalverdict", "") }} · dataset hash {{ manifest.dataset.sha256 }}{% if manifest.git_sha %} · commit {{ manifest.git_sha }}{% endif %}</p>
+</main>
+</body>
+</html>

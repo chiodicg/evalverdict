@@ -81,6 +81,12 @@ class JudgeConfig(BaseModel):
         return model
 
 
+class ReportConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    max_items_shown: int = Field(default=20, ge=0)
+
+
 class RunConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -92,6 +98,7 @@ class RunConfig(BaseModel):
     bootstrap: BootstrapConfig = Field(default_factory=BootstrapConfig)
     judge: JudgeConfig | None = None
     gates: dict[str, GateConfig] = Field(default_factory=dict)
+    report: ReportConfig = Field(default_factory=ReportConfig)
     sampling: dict[str, Any] = Field(default_factory=dict)
     budget_usd: float | None = Field(default=None, gt=0)
     max_error_rate: float = Field(default=0.05, ge=0, le=1)

@@ -37,6 +37,7 @@ evalverdict = "evalverdict.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/evalverdict"]
+artifacts = ["src/evalverdict/report/templates/*.j2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -13,6 +13,7 @@ from evalverdict._optional import MissingExtraError
 from evalverdict.config import load_config
 from evalverdict.env import load_env
 from evalverdict.estimate import estimate_run
+from evalverdict.report.render import write_reports
 from evalverdict.runner import execute, prepare, run_outcomes
 from evalverdict.scoring.compare import compare_runs
 from evalverdict.scoring.gates import EXIT_CODES, INVALID, worst_outcome
@@ -105,6 +106,19 @@ def compare(
     recommendation = result["recommendation"]
     typer.echo(f"Recommendation: {recommendation['decision']} ({recommendation['reason']})")
     typer.echo(f"Written to {output}")
+
+
+@app.command()
+def report(
+    run_dir: Annotated[Path, typer.Argument(help="A run directory under runs/.")],
+) -> None:
+    """Rebuild the HTML reports from a run's saved files. Makes no model calls."""
+    try:
+        written = write_reports(run_dir)
+    except SETUP_ERRORS as error:
+        raise _fail(error) from error
+    for path in written:
+        typer.echo(f"Wrote {path}")
 
 
 @scorers_app.command("list")

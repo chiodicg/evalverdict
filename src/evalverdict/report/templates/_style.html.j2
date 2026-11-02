@@ -1,0 +1,29 @@
+<style>
+:root { --bg: #fbfbfa; --fg: #1d1d1b; --muted: #5f5e5a; --line: #deddd7; --panel: #ffffff;
+  --pass: #1f6f43; --pass-bg: #e3f2e8; --fail: #a3261c; --fail-bg: #fbe5e2;
+  --warn: #8a5a00; --warn-bg: #fdf1d8; --accent: #2b4c7e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --fg: #ecebe6; --muted: #a8a69e;
+  --line: #34332f; --panel: #1f1f1d; --pass: #7fd3a1; --pass-bg: #18311f; --fail: #f2a097;
+  --fail-bg: #3a1c19; --warn: #f0c46b; --warn-bg: #352812; --accent: #9db8e6; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; } h2 { font-size: 1.15rem; margin: 32px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+h3 { font-size: 1rem; margin: 18px 0 6px; } p { margin: 6px 0; } .muted { color: var(--muted); }
+table { width: 100%; border-collapse: collapse; background: var(--panel); margin: 6px 0 12px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+.wrap { overflow-x: auto; } .headline { font-weight: 600; font-variant-numeric: tabular-nums; }
+.outcome, .verdict { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; }
+.outcome-pass, .verdict-better { color: var(--pass); background: var(--pass-bg); }
+.outcome-fail, .verdict-worse { color: var(--fail); background: var(--fail-bg); }
+.outcome-inconclusive, .verdict-inconclusive, .outcome-invalid { color: var(--warn); background: var(--warn-bg); }
+.banner { padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-weight: 600; }
+.banner-invalid { color: var(--fail); background: var(--fail-bg); } .banner-incomplete { color: var(--warn); background: var(--warn-bg); }
+.disclosure { padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel); margin: 8px 0; }
+.disclosure-warning { border-color: var(--fail); }
+.flag { color: var(--warn); font-size: 0.85rem; }
+pre { background: var(--panel); border: 1px solid var(--line); padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+details { margin: 4px 0 10px; } summary { cursor: pointer; color: var(--accent); }
+svg text { fill: var(--muted); font-size: 10px; } .bar { fill: var(--accent); } .ideal { stroke: var(--muted); stroke-dasharray: 3 3; }
+</style>

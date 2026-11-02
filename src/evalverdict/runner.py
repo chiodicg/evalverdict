@@ -20,6 +20,7 @@ from evalverdict.cache import ResponseCache, cache_key
 from evalverdict.config import RunConfig, ScorerEntry, TargetConfig
 from evalverdict.data import Dataset, Prediction, TestCase, load_dataset
 from evalverdict.engines.judge_client import JudgeClient
+from evalverdict.report.render import write_reports
 from evalverdict.scorers.generation import base_model
 from evalverdict.scoring.base import Scorer
 from evalverdict.scoring.compare import compare_runs
@@ -281,6 +282,7 @@ def _write_target_run(
             "cache_hits": collected.cache_hits,
             "unmeasured_calls": collected.unmeasured_calls,
         },
+        "report": config.report.model_dump(),
         "versions": _versions(),
         "git_sha": _git_sha(),
         "scorers": _resolved_scorers(config.scorers, scorers),
@@ -452,6 +454,7 @@ def execute(config: RunConfig, runs_root: Path = Path("runs"), resume: Path | No
         (run_dir / name / "manifest.json").write_text(_dump(written))
     if len(ready.targets) == 2:
         _write_comparison(run_dir, list(ready.targets))
+    write_reports(run_dir)
     return run_dir
 
 

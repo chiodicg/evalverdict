@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ comparison.candidate }} vs {{ comparison.baseline }}</title>
+{% include "_style.html.j2" %}
+</head>
+<body>
+<main>
+<h1>{{ comparison.candidate }} vs {{ comparison.baseline }}</h1>
+{% if comparison.refused %}
+<div class="banner banner-invalid">These runs were not compared: {{ comparison.refused }}</div>
+{% else %}
+<p class="muted">Differences are candidate minus baseline, on the {{ comparison.n_paired_items }} items both runs completed. Each interval resamples the same items for both models.</p>
+<h2>Recommendation: {{ comparison.recommendation.decision }}</h2>
+<p>{{ comparison.recommendation.reason }}. Only primary metrics decide.</p>
+{% for title, group in (("Primary", primary), ("Secondary", secondary)) if group %}
+<h2>{{ title }}</h2>
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Baseline</th><th>Candidate</th><th>Difference</th><th>Verdict</th></tr>
+{% for item in group %}
+{% if item.comparable %}
+<tr><td>{{ item.key }}</td><td>{{ item.baseline_value | number }}</td><td>{{ item.candidate_value | number }}</td>
+<td><span class="headline">{{ item.difference | signed }} [{{ item.ci.low | signed }}, {{ item.ci.high | signed }}] on {{ item.n_paired }} paired items</span></td>
+<td><span class="verdict verdict-{{ item.verdict }}">{{ item.verdict }}</span></td></tr>
+{% else %}
+<tr><td>{{ item.key }}</td><td colspan="4">not comparable: {{ item.reason }}</td></tr>
+{% endif %}
+{% endfor %}
+</table></div>
+{% endfor %}
+{% endif %}
+</main>
+</body>
+</html>

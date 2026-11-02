@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>haiku-vs-luna: baseline</title>
+<style>
+:root { --bg: #fbfbfa; --fg: #1d1d1b; --muted: #5f5e5a; --line: #deddd7; --panel: #ffffff;
+  --pass: #1f6f43; --pass-bg: #e3f2e8; --fail: #a3261c; --fail-bg: #fbe5e2;
+  --warn: #8a5a00; --warn-bg: #fdf1d8; --accent: #2b4c7e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --fg: #ecebe6; --muted: #a8a69e;
+  --line: #34332f; --panel: #1f1f1d; --pass: #7fd3a1; --pass-bg: #18311f; --fail: #f2a097;
+  --fail-bg: #3a1c19; --warn: #f0c46b; --warn-bg: #352812; --accent: #9db8e6; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; } h2 { font-size: 1.15rem; margin: 32px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+h3 { font-size: 1rem; margin: 18px 0 6px; } p { margin: 6px 0; } .muted { color: var(--muted); }
+table { width: 100%; border-collapse: collapse; background: var(--panel); margin: 6px 0 12px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+.wrap { overflow-x: auto; } .headline { font-weight: 600; font-variant-numeric: tabular-nums; }
+.outcome, .verdict { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; }
+.outcome-pass, .verdict-better { color: var(--pass); background: var(--pass-bg); }
+.outcome-fail, .verdict-worse { color: var(--fail); background: var(--fail-bg); }
+.outcome-inconclusive, .verdict-inconclusive, .outcome-invalid { color: var(--warn); background: var(--warn-bg); }
+.banner { padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-weight: 600; }
+.banner-invalid { color: var(--fail); background: var(--fail-bg); } .banner-incomplete { color: var(--warn); background: var(--warn-bg); }
+.disclosure { padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel); margin: 8px 0; }
+.disclosure-warning { border-color: var(--fail); }
+.flag { color: var(--warn); font-size: 0.85rem; }
+pre { background: var(--panel); border: 1px solid var(--line); padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+details { margin: 4px 0 10px; } summary { cursor: pointer; color: var(--accent); }
+svg text { fill: var(--muted); font-size: 10px; } .bar { fill: var(--accent); } .ideal { stroke: var(--muted); stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+<main>
+<h1>haiku-vs-luna: baseline</h1>
+<p class="muted">anthropic/claude-haiku-5-5 · dataset datasets/summaries.jsonl (120 items) · seed 42</p>
+
+
+<section>
+<h2>Outcome</h2>
+<p>Overall: <span class="outcome outcome-inconclusive">inconclusive</span></p>
+
+<div class="wrap"><table>
+<tr><th>Gate</th><th>Threshold</th><th>Mode</th><th>Role</th><th>Outcome</th></tr>
+
+<tr><td>judge.score</td>
+<td>min 0.75</td>
+<td>whole interval</td>
+<td>primary</td>
+<td><span class="outcome outcome-pass">pass</span></td></tr>
+
+<tr><td>latency.latency_p95_s</td>
+<td>max 1.3</td>
+<td>whole interval</td>
+<td>secondary</td>
+<td><span class="outcome outcome-inconclusive">inconclusive</span></td></tr>
+
+</table></div>
+
+</section>
+
+<section>
+<h2>Run health</h2>
+<p>API errors 0 of 120 (0.0%) · Parse failures 2 of 120 (1.7%) · Judge failures 0</p>
+<p>Target spend $0.0360 over 120 calls, 0 from cache · Judge spend $1.0800 over 120 calls</p>
+<p class="muted">Cost sources: litellm_price</p>
+</section>
+
+<section>
+<h2>Method notes</h2>
+
+<p class="disclosure">Intervals cover test-item sampling only, not variation between repeated calls to the same model.</p>
+
+
+<p class="disclosure">Sampling settings not accepted by every model were not sent, so models ran at provider defaults for: temperature.</p>
+
+<p class="muted">Sent: max_tokens = 1024</p>
+
+
+
+
+</section>
+
+
+<section>
+<h2>Generation</h2>
+
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Result</th><th>Interval</th><th>Direction</th></tr>
+
+
+<tr><td>judge.score</td>
+<td><span class="headline">0.83 ±0.04 on n=120</span></td>
+<td>95% CI 0.79 to 0.87</td>
+<td>higher is better</td></tr>
+
+
+</table></div>
+
+
+
+
+<details><summary>judge.score: items</summary>
+<p class="muted">Showing 20 of 30 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>c0</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c1</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c2</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c3</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c4</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c5</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c6</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c7</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c8</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c9</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c10</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c11</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c12</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c13</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c14</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c15</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c16</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c17</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c18</td><td>0.80</td><td>reason: ok</td></tr>
+
+<tr class="item"><td>c19</td><td>0.80</td><td>reason: ok</td></tr>
+
+</table></div>
+</details>
+
+
+</section>
+
+<section>
+<h2>Operational</h2>
+<p class="muted">Measured with concurrency 4, run started 2026-11-02T10:00:00+00:00. Latency depends on load and region, so compare it between runs made close together.</p>
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Result</th><th>Interval</th><th>Direction</th></tr>
+
+
+<tr><td>latency.latency_p95_s</td>
+<td><span class="headline">1.20 ±0.25 on n=120</span></td>
+<td>95% CI 1.00 to 1.50</td>
+<td>lower is better</td></tr>
+
+
+
+<tr><td>latency.ttft_p50_s</td><td colspan="3">Not measured: no item has this measurement</td></tr>
+
+
+
+<tr><td>cost.cost_per_prediction_usd</td>
+<td><span class="headline">0.0003 ±5e-05 on n=120</span></td>
+<td>95% CI 0.00025 to 0.00035</td>
+<td>lower is better</td></tr>
+
+
+</table></div>
+
+
+
+
+
+
+
+
+
+</section>
+
+
+
+
+
+<section>
+<h2>Rubric: summary_quality</h2>
+<p class="muted">Judge anthropic/claude-sonnet-5-5 · rubric hash aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
+<pre>name: summary_quality
+steps:
+  - Check the summary.
+</pre>
+</section>
+
+
+<section>
+<h2>Non-default settings</h2>
+<ul><li>judge: rubric = rubrics/summary_quality.yaml</li><li>cost: bootstrap.n_resamples = 5000</li></ul>
+
+</section>
+<p class="muted">evalverdict 0.1.0 · dataset hash bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb · commit cccccccccccccccccccccccccccccccccccccccc</p>
+</main>
+</body>
+</html>
