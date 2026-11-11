@@ -1,0 +1,404 @@
+[
+  {
+    "ci": {
+      "high": 0.42749304567214375,
+      "level": 0.95,
+      "low": -0.3123502183732128,
+      "method": "percentile",
+      "n_resamples": 2000,
+      "n_undefined": 0
+    },
+    "details": {
+      "n_items": 15,
+      "provenance": "human_independent",
+      "title": "Judge vs human labels"
+    },
+    "family": "generation",
+    "flags": [
+      "small_sample"
+    ],
+    "higher_is_better": true,
+    "n": 15,
+    "name": "weighted_kappa",
+    "per_item": [
+      {
+        "detail": {},
+        "item_id": "L01",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L03",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L08",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L10",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L21",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L23",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L26",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L27",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L28",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L30",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L34",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L35",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L39",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L42",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L43",
+        "value": null
+      }
+    ],
+    "scorer": "agreement",
+    "value": -0.01379310344827589
+  },
+  {
+    "ci": {
+      "high": 0.6459211454882708,
+      "level": 0.95,
+      "low": -0.0011669468833674411,
+      "method": "percentile",
+      "n_resamples": 2000,
+      "n_undefined": 0
+    },
+    "details": {
+      "n_changed_in_review": 0,
+      "n_items": 35,
+      "provenance": "ai_draft_human_reviewed",
+      "title": "Judge vs reviewed labels"
+    },
+    "family": "generation",
+    "flags": [],
+    "higher_is_better": true,
+    "n": 35,
+    "name": "weighted_kappa",
+    "per_item": [
+      {
+        "detail": {},
+        "item_id": "L02",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L04",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L05",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L06",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L07",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L09",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L11",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L12",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L13",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L14",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L15",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L16",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L17",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L18",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L19",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L20",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L22",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L24",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L25",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L29",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L31",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L32",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L33",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L36",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L37",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L38",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L40",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L41",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L44",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L45",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L46",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L47",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L48",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L49",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L50",
+        "value": null
+      }
+    ],
+    "scorer": "agreement",
+    "value": 0.38786008230452673
+  },
+  {
+    "ci": {
+      "high": 0.3034363274762675,
+      "level": 0.95,
+      "low": -0.5217553536664504,
+      "method": "percentile",
+      "n_resamples": 2000,
+      "n_undefined": 0
+    },
+    "details": {
+      "n_items": 15,
+      "provenance": "ai_draft",
+      "title": "AI drafts vs human labels"
+    },
+    "family": "generation",
+    "flags": [
+      "small_sample"
+    ],
+    "higher_is_better": true,
+    "n": 15,
+    "name": "weighted_kappa",
+    "per_item": [
+      {
+        "detail": {},
+        "item_id": "L01",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L03",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L08",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L10",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L21",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L23",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L26",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L27",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L28",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L30",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L34",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L35",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L39",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L42",
+        "value": null
+      },
+      {
+        "detail": {},
+        "item_id": "L43",
+        "value": null
+      }
+    ],
+    "scorer": "agreement",
+    "value": -0.2295081967213113
+  }
+]

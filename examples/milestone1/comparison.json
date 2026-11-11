@@ -1,0 +1,233 @@
+{
+  "baseline": "baseline",
+  "baseline_status": "complete",
+  "candidate": "candidate",
+  "candidate_status": "complete",
+  "metrics": [
+    {
+      "baseline_value": 0.8788095626235009,
+      "candidate_value": 0.8791495081782341,
+      "ci": {
+        "high": 0.002788006715476559,
+        "level": 0.95,
+        "low": -0.0020154170617461766,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 0.0003399455547332675,
+      "higher_is_better": true,
+      "key": "bertscore.f1",
+      "method": "per_item",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "inconclusive"
+    },
+    {
+      "baseline_value": 0.8581521692872047,
+      "candidate_value": 0.8649308490753174,
+      "ci": {
+        "high": 0.009076785728335467,
+        "level": 0.95,
+        "low": 0.00435168210417024,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 0.00677867978811264,
+      "higher_is_better": true,
+      "key": "bertscore.precision",
+      "method": "per_item",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "better"
+    },
+    {
+      "baseline_value": 0.9007331424951553,
+      "candidate_value": 0.8940629670023919,
+      "ci": {
+        "high": -0.003735455498099355,
+        "level": 0.95,
+        "low": -0.009451009795069684,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": -0.006670175492763497,
+      "higher_is_better": true,
+      "key": "bertscore.recall",
+      "method": "per_item",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "worse"
+    },
+    {
+      "baseline_value": 0.0001508285,
+      "candidate_value": 0.00014427599999999999,
+      "ci": {
+        "high": 8.958999999999925e-07,
+        "level": 0.95,
+        "low": -1.3747465624999987e-05,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": -6.552500000000009e-06,
+      "higher_is_better": false,
+      "key": "cost.cost_per_prediction_usd",
+      "method": "per_item",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "inconclusive"
+    },
+    {
+      "baseline_value": 1.0957303960458376,
+      "candidate_value": 1.7701010624878109,
+      "ci": {
+        "high": 0.8272411704892874,
+        "level": 0.95,
+        "low": 0.5681260001976625,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 0.6743706664419733,
+      "higher_is_better": false,
+      "key": "latency.latency_p50_s",
+      "method": "recomputed",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "worse"
+    },
+    {
+      "baseline_value": 2.341396005608838,
+      "candidate_value": 3.795689564605709,
+      "ci": {
+        "high": 2.2954483823594622,
+        "level": 0.95,
+        "low": 0.5803507847554248,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 1.4542935589968713,
+      "higher_is_better": false,
+      "key": "latency.latency_p95_s",
+      "method": "recomputed",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "worse"
+    },
+    {
+      "baseline_value": 243.09110036028127,
+      "candidate_value": 626.4400059695926,
+      "ci": {
+        "high": 489.9033437472982,
+        "level": 0.95,
+        "low": 286.1769254507454,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 383.34890560931126,
+      "higher_is_better": true,
+      "key": "latency.throughput_tokens_per_s",
+      "method": "recomputed",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "better"
+    },
+    {
+      "baseline_value": 0.6998411045060493,
+      "candidate_value": 1.530402124975808,
+      "ci": {
+        "high": 0.9690213978203246,
+        "level": 0.95,
+        "low": 0.6880023668141803,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 0.8305610204697587,
+      "higher_is_better": false,
+      "key": "latency.ttft_p50_s",
+      "method": "recomputed",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "worse"
+    },
+    {
+      "baseline_value": 1.8470385791675619,
+      "candidate_value": 3.5035888975195117,
+      "ci": {
+        "high": 2.6536685705184953,
+        "level": 0.95,
+        "low": 0.7218917585669241,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": 1.6565503183519499,
+      "higher_is_better": false,
+      "key": "latency.ttft_p95_s",
+      "method": "recomputed",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "worse"
+    },
+    {
+      "baseline_value": 0.21400619472596094,
+      "candidate_value": 0.20095131456973725,
+      "ci": {
+        "high": -0.0015851182239208642,
+        "level": 0.95,
+        "low": -0.024957238101944494,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": -0.013054880156223692,
+      "higher_is_better": true,
+      "key": "rouge.rougeL",
+      "method": "per_item",
+      "n_paired": 200,
+      "primary": false,
+      "verdict": "worse"
+    },
+    {
+      "baseline_value": 0.7235,
+      "candidate_value": 0.7095,
+      "ci": {
+        "high": 0.0020000000000001154,
+        "level": 0.95,
+        "low": -0.030000000000000027,
+        "method": "percentile",
+        "n_resamples": 2000,
+        "n_undefined": 0
+      },
+      "comparable": true,
+      "difference": -0.014000000000000012,
+      "higher_is_better": true,
+      "key": "summary_quality.score",
+      "method": "per_item",
+      "n_paired": 200,
+      "primary": true,
+      "verdict": "inconclusive"
+    }
+  ],
+  "n_paired_items": 200,
+  "recommendation": {
+    "decision": "inconclusive",
+    "reason": "primary metrics disagree or are inconclusive"
+  }
+}

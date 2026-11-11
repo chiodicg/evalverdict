@@ -1,0 +1,185 @@
+{
+  "concurrency": 4,
+  "config_sha256": "3b81eec713000ee50d8197e3c7cdc9c16e92aaf0991607a477c689d53cb58f0e",
+  "created_at": "2026-11-11T09:48:38.896809+00:00",
+  "dataset": {
+    "attribution": "Contains public sector information licensed under the Open Government Licence v3.0.",
+    "n": 200,
+    "path": "datasets/summaries.jsonl",
+    "sha256": "42ee63f300e118a33570f1f6108a8a8afadd64d62f7d836399640b4e4ee5c403"
+  },
+  "gates": {
+    "bertscore.f1": {
+      "gate": "ci",
+      "max": null,
+      "min": 0.7,
+      "primary": false
+    },
+    "latency.ttft_p95_s": {
+      "gate": "ci",
+      "max": 2.0,
+      "min": null,
+      "primary": false
+    },
+    "summary_quality.score": {
+      "gate": "ci",
+      "max": null,
+      "min": 0.75,
+      "primary": true
+    }
+  },
+  "git_sha": "c5ab21b51fd1925846ea3bc4a34865aaa57214e5",
+  "judge": {
+    "allow_self_judging": false,
+    "cache_hits": 200,
+    "calls": 0,
+    "model": "anthropic/claude-sonnet-5-5",
+    "spend_usd": 0.0
+  },
+  "name": "haiku-vs-luna",
+  "outcome": "fail",
+  "parameters_sent": {
+    "max_tokens": 1024
+  },
+  "repeats": 1,
+  "report": {
+    "max_items_shown": 20
+  },
+  "resume_sha256": "16ef6a22e266d7ec765b4e4eca3035b07b8d7c67650caab508afa12c2a0bd574",
+  "sampling_dropped": [],
+  "scorers": [
+    {
+      "bootstrap": {
+        "level": 0.95,
+        "method": "percentile",
+        "n_resamples": 2000
+      },
+      "enabled": true,
+      "import": null,
+      "metrics": [
+        "score"
+      ],
+      "name": "summary_quality",
+      "params": {
+        "call_deadline_s": 600.0,
+        "concurrency": 4,
+        "judge_model": null,
+        "rubric": "rubrics/summary_quality.yaml",
+        "strict_mode": false,
+        "threshold": 0.5
+      },
+      "type": "judge"
+    },
+    {
+      "bootstrap": {
+        "level": 0.95,
+        "method": "percentile",
+        "n_resamples": 2000
+      },
+      "enabled": true,
+      "import": null,
+      "metrics": [
+        "precision",
+        "recall",
+        "f1"
+      ],
+      "name": "bertscore",
+      "params": {
+        "backend": "bert_score",
+        "batch_size": 32,
+        "model_type": "roberta-large"
+      },
+      "type": "bertscore"
+    },
+    {
+      "bootstrap": {
+        "level": 0.95,
+        "method": "percentile",
+        "n_resamples": 2000
+      },
+      "enabled": true,
+      "import": null,
+      "metrics": [
+        "rougeL"
+      ],
+      "name": "rouge",
+      "params": {
+        "backend": "rouge_score",
+        "use_stemmer": false
+      },
+      "type": "rouge"
+    },
+    {
+      "bootstrap": {
+        "level": 0.95,
+        "method": "percentile",
+        "n_resamples": 2000
+      },
+      "enabled": true,
+      "import": null,
+      "metrics": [
+        "latency_p50_s",
+        "latency_p95_s",
+        "ttft_p50_s",
+        "ttft_p95_s",
+        "throughput_tokens_per_s"
+      ],
+      "name": "latency",
+      "params": {
+        "percentiles": [
+          50.0,
+          95.0
+        ]
+      },
+      "type": "latency"
+    },
+    {
+      "bootstrap": {
+        "level": 0.95,
+        "method": "percentile",
+        "n_resamples": 2000
+      },
+      "enabled": true,
+      "import": null,
+      "metrics": [
+        "cost_per_prediction_usd"
+      ],
+      "name": "cost",
+      "params": {},
+      "type": "cost"
+    }
+  ],
+  "seed": 42,
+  "spend": {
+    "cache_hits": 200,
+    "calls": 0,
+    "unmeasured_calls": 0,
+    "usd": 0.0
+  },
+  "status": "complete",
+  "target": "baseline",
+  "target_config": {
+    "kind": "litellm",
+    "max_tokens": 1024,
+    "model": "anthropic/claude-haiku-5-5",
+    "system_prompt": "Summarise this GOV.UK guidance page in one sentence of at most 30 words. Reply with the sentence only."
+  },
+  "versions": {
+    "bert-score": "0.3.13",
+    "deepeval": "4.3.2",
+    "evaluate": "0.4.6",
+    "evalverdict": "0.1.0",
+    "evidently": "0.7.23",
+    "fairlearn": "0.15.0",
+    "inspect-ai": "0.3.286",
+    "langfuse": "5.1.0",
+    "lime": "0.2.0.1",
+    "litellm": "1.106.6",
+    "numpy": "2.5.4",
+    "pandas": "2.3.3",
+    "python": "3.12.13",
+    "rouge-score": "0.1.2",
+    "scikit-learn": "1.9.1",
+    "shap": "0.54.1"
+  }
+}

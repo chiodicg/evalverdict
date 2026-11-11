@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>candidate vs baseline</title>
+<style>
+:root { --bg: #fbfbfa; --fg: #1d1d1b; --muted: #5f5e5a; --line: #deddd7; --panel: #ffffff;
+  --pass: #1f6f43; --pass-bg: #e3f2e8; --fail: #a3261c; --fail-bg: #fbe5e2;
+  --warn: #8a5a00; --warn-bg: #fdf1d8; --accent: #2b4c7e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --fg: #ecebe6; --muted: #a8a69e;
+  --line: #34332f; --panel: #1f1f1d; --pass: #7fd3a1; --pass-bg: #18311f; --fail: #f2a097;
+  --fail-bg: #3a1c19; --warn: #f0c46b; --warn-bg: #352812; --accent: #9db8e6; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; } h2 { font-size: 1.15rem; margin: 32px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+h3 { font-size: 1rem; margin: 18px 0 6px; } p { margin: 6px 0; } .muted { color: var(--muted); }
+table { width: 100%; border-collapse: collapse; background: var(--panel); margin: 6px 0 12px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+.wrap { overflow-x: auto; } .headline { font-weight: 600; font-variant-numeric: tabular-nums; }
+.outcome, .verdict { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; }
+.outcome-pass, .verdict-better { color: var(--pass); background: var(--pass-bg); }
+.outcome-fail, .verdict-worse { color: var(--fail); background: var(--fail-bg); }
+.outcome-inconclusive, .verdict-inconclusive, .outcome-invalid { color: var(--warn); background: var(--warn-bg); }
+.banner { padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-weight: 600; }
+.banner-invalid { color: var(--fail); background: var(--fail-bg); } .banner-incomplete { color: var(--warn); background: var(--warn-bg); }
+.disclosure { padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel); margin: 8px 0; }
+.disclosure-warning { border-color: var(--fail); }
+.flag { color: var(--warn); font-size: 0.85rem; }
+pre { background: var(--panel); border: 1px solid var(--line); padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+details { margin: 4px 0 10px; } summary { cursor: pointer; color: var(--accent); }
+svg text { fill: var(--muted); font-size: 10px; } .bar { fill: var(--accent); } .ideal { stroke: var(--muted); stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+<main>
+<h1>candidate vs baseline</h1>
+
+<p class="muted">Differences are candidate minus baseline, on the 200 items both runs completed. Each interval resamples the same items for both models.</p>
+<h2>Recommendation: inconclusive</h2>
+<p>primary metrics disagree or are inconclusive. Only primary metrics decide.</p>
+
+<h2>Primary</h2>
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Baseline</th><th>Candidate</th><th>Difference</th><th>Verdict</th></tr>
+
+
+<tr><td>summary_quality.score</td><td>0.72</td><td>0.71</td>
+<td><span class="headline">-0.01 [-0.03, +0.002] on 200 paired items</span></td>
+<td><span class="verdict verdict-inconclusive">inconclusive</span></td></tr>
+
+
+</table></div>
+
+<h2>Secondary</h2>
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Baseline</th><th>Candidate</th><th>Difference</th><th>Verdict</th></tr>
+
+
+<tr><td>bertscore.f1</td><td>0.88</td><td>0.88</td>
+<td><span class="headline">+0.00034 [-0.002, +0.0028] on 200 paired items</span></td>
+<td><span class="verdict verdict-inconclusive">inconclusive</span></td></tr>
+
+
+
+<tr><td>bertscore.precision</td><td>0.86</td><td>0.86</td>
+<td><span class="headline">+0.0068 [+0.0044, +0.0091] on 200 paired items</span></td>
+<td><span class="verdict verdict-better">better</span></td></tr>
+
+
+
+<tr><td>bertscore.recall</td><td>0.90</td><td>0.89</td>
+<td><span class="headline">-0.0067 [-0.0095, -0.0037] on 200 paired items</span></td>
+<td><span class="verdict verdict-worse">worse</span></td></tr>
+
+
+
+<tr><td>cost.cost_per_prediction_usd</td><td>0.00015</td><td>0.00014</td>
+<td><span class="headline">-6.6e-06 [-1.4e-05, +9e-07] on 200 paired items</span></td>
+<td><span class="verdict verdict-inconclusive">inconclusive</span></td></tr>
+
+
+
+<tr><td>latency.latency_p50_s</td><td>1.10</td><td>1.77</td>
+<td><span class="headline">+0.67 [+0.57, +0.83] on 200 paired items</span></td>
+<td><span class="verdict verdict-worse">worse</span></td></tr>
+
+
+
+<tr><td>latency.latency_p95_s</td><td>2.34</td><td>3.80</td>
+<td><span class="headline">+1.45 [+0.58, +2.30] on 200 paired items</span></td>
+<td><span class="verdict verdict-worse">worse</span></td></tr>
+
+
+
+<tr><td>latency.throughput_tokens_per_s</td><td>243.09</td><td>626.44</td>
+<td><span class="headline">+383.35 [+286.18, +489.90] on 200 paired items</span></td>
+<td><span class="verdict verdict-better">better</span></td></tr>
+
+
+
+<tr><td>latency.ttft_p50_s</td><td>0.70</td><td>1.53</td>
+<td><span class="headline">+0.83 [+0.69, +0.97] on 200 paired items</span></td>
+<td><span class="verdict verdict-worse">worse</span></td></tr>
+
+
+
+<tr><td>latency.ttft_p95_s</td><td>1.85</td><td>3.50</td>
+<td><span class="headline">+1.66 [+0.72, +2.65] on 200 paired items</span></td>
+<td><span class="verdict verdict-worse">worse</span></td></tr>
+
+
+
+<tr><td>rouge.rougeL</td><td>0.21</td><td>0.20</td>
+<td><span class="headline">-0.01 [-0.02, -0.0016] on 200 paired items</span></td>
+<td><span class="verdict verdict-worse">worse</span></td></tr>
+
+
+</table></div>
+
+
+
+<h2>Judge agreement</h2>
+
+
+<p><strong>Judge vs human labels</strong>: <span class="headline">-0.01 [-0.31, 0.43] on n=15</span> weighted kappa</p>
+
+
+
+<p><strong>Judge vs reviewed labels</strong>: <span class="headline">0.39 [-0.0012, 0.65] on n=35</span> weighted kappa · 0 changed in review</p>
+
+
+
+<p><strong>AI drafts vs human labels</strong>: <span class="headline">-0.23 [-0.52, 0.30] on n=15</span> weighted kappa</p>
+
+
+<p class="muted">Each result uses different labels and is shown separately. Reviewed labels were drafted by AI, so they are not independent human judgement.</p>
+
+</main>
+</body>
+</html>

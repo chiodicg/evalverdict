@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>haiku-vs-luna: candidate</title>
+<style>
+:root { --bg: #fbfbfa; --fg: #1d1d1b; --muted: #5f5e5a; --line: #deddd7; --panel: #ffffff;
+  --pass: #1f6f43; --pass-bg: #e3f2e8; --fail: #a3261c; --fail-bg: #fbe5e2;
+  --warn: #8a5a00; --warn-bg: #fdf1d8; --accent: #2b4c7e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --fg: #ecebe6; --muted: #a8a69e;
+  --line: #34332f; --panel: #1f1f1d; --pass: #7fd3a1; --pass-bg: #18311f; --fail: #f2a097;
+  --fail-bg: #3a1c19; --warn: #f0c46b; --warn-bg: #352812; --accent: #9db8e6; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; } h2 { font-size: 1.15rem; margin: 32px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+h3 { font-size: 1rem; margin: 18px 0 6px; } p { margin: 6px 0; } .muted { color: var(--muted); }
+table { width: 100%; border-collapse: collapse; background: var(--panel); margin: 6px 0 12px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+.wrap { overflow-x: auto; } .headline { font-weight: 600; font-variant-numeric: tabular-nums; }
+.outcome, .verdict { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; }
+.outcome-pass, .verdict-better { color: var(--pass); background: var(--pass-bg); }
+.outcome-fail, .verdict-worse { color: var(--fail); background: var(--fail-bg); }
+.outcome-inconclusive, .verdict-inconclusive, .outcome-invalid { color: var(--warn); background: var(--warn-bg); }
+.banner { padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-weight: 600; }
+.banner-invalid { color: var(--fail); background: var(--fail-bg); } .banner-incomplete { color: var(--warn); background: var(--warn-bg); }
+.disclosure { padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel); margin: 8px 0; }
+.disclosure-warning { border-color: var(--fail); }
+.flag { color: var(--warn); font-size: 0.85rem; }
+pre { background: var(--panel); border: 1px solid var(--line); padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+details { margin: 4px 0 10px; } summary { cursor: pointer; color: var(--accent); }
+svg text { fill: var(--muted); font-size: 10px; } .bar { fill: var(--accent); } .ideal { stroke: var(--muted); stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+<main>
+<h1>haiku-vs-luna: candidate</h1>
+<p class="muted">openai/gpt-6-luna · dataset datasets/summaries.jsonl (200 items) · seed 42</p>
+<p class="muted">Dataset: Contains public sector information licensed under the Open Government Licence v3.0.</p>
+
+
+<section>
+<h2>Outcome</h2>
+<p>Overall: <span class="outcome outcome-fail">fail</span></p>
+
+<div class="wrap"><table>
+<tr><th>Gate</th><th>Threshold</th><th>Mode</th><th>Role</th><th>Outcome</th></tr>
+
+<tr><td>summary_quality.score</td>
+<td>min 0.75</td>
+<td>whole interval</td>
+<td>primary</td>
+<td><span class="outcome outcome-fail">fail</span></td></tr>
+
+<tr><td>bertscore.f1</td>
+<td>min 0.7</td>
+<td>whole interval</td>
+<td>secondary</td>
+<td><span class="outcome outcome-pass">pass</span></td></tr>
+
+<tr><td>latency.ttft_p95_s</td>
+<td>max 2.0</td>
+<td>whole interval</td>
+<td>secondary</td>
+<td><span class="outcome outcome-fail">fail</span></td></tr>
+
+</table></div>
+
+</section>
+
+<section>
+<h2>Run health</h2>
+<p>API errors 0 of 200 (0.0%) · Parse failures 0 of 200 (0.0%) · Judge failures 0</p>
+<p>Target spend $0.0000 over 0 calls, 200 from cache · Judge spend $0.0000 over 0 calls</p>
+<p class="muted">Cost sources: response_usage</p>
+</section>
+
+<section>
+<h2>Method notes</h2>
+
+<p class="disclosure">Intervals cover test-item sampling only, not variation between repeated calls to the same model.</p>
+
+
+<p class="disclosure">Only the settings below were sent; anything else ran at provider defaults.</p>
+
+<p class="muted">Sent: max_tokens = 1024</p>
+
+
+
+<p class="disclosure">The judge (anthropic/claude-sonnet-5-5) shares a vendor with anthropic/claude-haiku-5-5, which may favour that model's style.</p>
+
+
+</section>
+
+
+<section>
+<h2>Generation</h2>
+
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Result</th><th>Interval</th><th>Direction</th></tr>
+
+
+<tr><td>summary_quality.score</td>
+<td><span class="headline">0.71 ±0.01 on n=200</span></td>
+<td>95% CI 0.69 to 0.72</td>
+<td>higher is better</td></tr>
+
+
+
+<tr><td>bertscore.precision</td>
+<td><span class="headline">0.86 ±0.0024 on n=200</span></td>
+<td>95% CI 0.86 to 0.87</td>
+<td>higher is better</td></tr>
+
+
+
+<tr><td>bertscore.recall</td>
+<td><span class="headline">0.89 ±0.0031 on n=200</span></td>
+<td>95% CI 0.89 to 0.90</td>
+<td>higher is better</td></tr>
+
+
+
+<tr><td>bertscore.f1</td>
+<td><span class="headline">0.88 ±0.0024 on n=200</span></td>
+<td>95% CI 0.88 to 0.88</td>
+<td>higher is better</td></tr>
+
+
+
+<tr><td>rouge.rougeL</td>
+<td><span class="headline">0.20 ±0.01 on n=200</span></td>
+<td>95% CI 0.19 to 0.21</td>
+<td>higher is better</td></tr>
+
+
+</table></div>
+
+
+
+
+<details><summary>summary_quality.score: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>0.50</td><td>reason: The output is a single sentence with no preamble or filler, and every claim it makes is supported by the source: signs and speed limits, signed diversions during closures, following instructions if stranded, and the cycling ban. However, it reads as a list of tips rather than a statement of the main point, which is guidance for drivers using the A3 Hindhead tunnel. It leaves out the maintenance closures, including the overnight work, one tunnel closed at a time under contraflow, and the pointer to scheduled roadworks. Those closures are the key fact in the expected output. The cycling prohibition is a minor detail and takes space that closures should have had. The summary is accurate but incomplete.</td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>0.60</td><td>reason: The output is a single sentence with no preamble or filler. It captures the main point: RWM&#39;s high-level National Geological Screening of 13 regions across England, Wales and Northern Ireland, for the safety of a GDF. Its claims are supported by the source, including the note that there are no plans to site a GDF in Northern Ireland. One weakness is the phrase &#39;not identifying sites&#39;. The source says more detailed knowledge is needed to identify suitable locations, so this is an inference, though a reasonable one. The expected output is a short title-like phrase, &#39;Getting to know the geology in your area&#39;, which stresses informing people about regional geology. The summary covers the geology and regional framing but not the informational, public-facing aspect. It also spends space on the Northern Ireland caveat, which is a minor detail rather than the main point. Overall it is accurate and fairly complete, but dense and only partly aligned with the expected emphasis.</td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>0.60</td><td>reason: The output is a single sentence with no preamble or filler, and every claim is supported by the source: full WCAG 2.1 AA compliance, support for common accessibility needs, help and alternative formats, and the October 2019 test date. It captures the page&#39;s overall purpose reasonably well. However, the expected output stresses the inclusive aim, that everyone should be able to use the website regardless of access needs, disability or condition. The summary only implies this through &#39;supports common accessibility needs&#39; and never states the goal. It also spends space on details such as the test date and compliance status, which are not in the expected key point, and it omits the enforcement and reporting procedures. It is accurate but not fully complete against the expected output.</td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>0.80</td><td>reason: The output is a single sentence with no preamble or filler. It states the main point, which is support, advice and guidance for LGBT people, and it covers the categories in the source: discrimination, travel, hate crime, health, abuse, wellbeing, rights, marriage and historic convictions. This also matches the expected output&#39;s core idea of information and links to services and guidance for LGBT individuals. One weakness is that it calls all support &#39;confidential&#39;, but the source says only some services are confidential, so that claim is not fully supported. It also leaves out the idea of signposting to organisations and links, and the list of topics is a little dense. Overall it is accurate and fairly complete.</td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>0.70</td><td>reason: The output is a single sentence with no preamble or filler. It captures the main point: agents should use subject headings on client letters to route Self Assessment, PAYE and Income Tax queries, and it adds the reference-number requirement from the source. This covers the key facts in the expected output (Self Assessment, PAYE and Income Tax headings for agents&#39; letters to HMRC). One flaw is the phrase &#34;HMRC agents&#34;, which wrongly suggests the agents work for HMRC when they act on behalf of clients, so this is a slight inaccuracy. The summary also omits the primary/secondary heading structure and the purpose of helping HMRC decide whether technical input is needed. Overall it is accurate and fairly complete, but the minor misattribution and the extra detail keep it below the top score.</td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.80</td><td>reason: The output is a single sentence with no preamble or filler. It states the main point: regional aggregates working parties&#39; annual reports covering extraction, sales, supply and demand, and marine, recycled and secondary aggregates. This matches the source and the expected output&#39;s core idea of documents on aggregates working parties&#39; annual and monitoring reports. The 2020–2022 range is supported by the listed years. It omits the word &#39;monitoring&#39; and the note that earlier reports are archived. The imperative &#39;Find...&#39; phrasing reads slightly like a page description rather than a summary, but nothing unsupported is claimed. Overall it is accurate and fairly complete.</td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>0.60</td><td>reason: The output is a single sentence with no preamble, and it covers the main points: tax-free sales at events tied to the charity&#39;s aims, taxable fundraising profits, separate operators for significant risk, and licences. That matches the expected output&#39;s focus on following the law and when tax is due. It has accuracy problems, though. &#39;Tax-free at qualifying events&#39; is only loosely supported. &#39;Free alcohol cannot be included in admission&#39; is a slight distortion, since the source says the alcohol&#39;s value must not be included in the ticket price. It also says &#39;may be needed&#39; for licences, whereas the source says a licence is required. The semicolon-packed sentence reads as a cramped list instead of a clear summary, and it omits that profits below the HMRC threshold may be exempt.</td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>0.70</td><td>reason: The output is a single sentence with no preamble or filler. It states the main point correctly: Natural England investigates reports of animal deaths or injuries possibly caused by pesticides. It adds accurate details that the source supports: land and farm inspections, testing, and closing cases or referring findings for further action. It does not contradict the source. It falls short of the expected output in two ways. It omits that wildlife and pets (companion animals) are covered, saying only &#39;animals&#39;, and it does not frame the content as information for landowners. &#39;Referring findings for further action&#39; is a loose paraphrase of the Health and Safety Executive deciding on further action. The summary is accurate but not fully complete.</td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>0.70</td><td>reason: The output is a single sentence with no preamble or filler, as the task requires. It captures the main point: challenging national security-based immigration or citizenship decisions at SIAC. It also adds accurate details from the source, namely the deadlines, the tribunal review and the later appeal on a point of law. Nothing in it is unsupported. However, it is less specific than the expected output. It doesn&#39;t say which decisions can be challenged (removal or deportation, being kept out of the UK, loss of British citizenship), and &#39;immigration or citizenship decisions&#39; is vague. It also leaves out refusal of citizenship. Its focus on deadlines and the later appeal moves away from the expected &#39;how to appeal&#39; framing. It is accurate but incomplete on the key facts.</td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>0.70</td><td>reason: The output is a single sentence with no preamble or filler. It states the main point: eligible attractions and facilities can apply to Highways England for brown signs. Its details are supported by the source: attractions can be signed from motorways and A-roads, facilities only from A-roads, the applicant pays, and the process takes at least 9 months. It leaves out that the process applies only to roads Highways England manages (other authorities handle other roads), which is the core of the expected output, and it never mentions the direct or private access route. It also does not clearly frame the sentence as a how-to-apply summary. It adds some detail such as costs and timing that the expected output does not include. Because of the missing scope and the added detail, it is accurate but incomplete.</td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>0.80</td><td>reason: The output is a single sentence with no preamble or filler. It captures the main point: a confidential &#39;sensitive applications&#39; process for applicants who have changed gender, covering first-time applications, renewals and replacements. It adds supported details: email current and previous names and any SIA numbers, then wait for a reply before applying. All claims are supported by the source. The expected output is a brief title-like statement about how applications are handled for people who have changed their gender, and the output covers that. Minor shortcomings: it is dense, it omits the ten-working-day response and the consequence of not waiting, and &#39;replacements&#39; loses the nuance of a change in name and gender. It also goes beyond the very brief expected summary.</td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.60</td><td>reason: The output is a single sentence with no preamble or filler. It states the main point accurately: MOD offers apprenticeships to new recruits and existing staff, in both armed forces and civilian roles, with nationally recognised qualifications. It does not overstate anything, though &#39;GCSE to master&#39;s level&#39; is slightly loose for level 2 to level 7, and &#39;paid work&#39; is only implied by &#39;earn while you learn&#39;. It omits the expected output&#39;s key points: MOD as a major provider, and information on how to apply or find current opportunities. The source text does not say MOD is the largest provider, so omitting that is defensible, but the apply/find-out element is still missing. The summary is accurate but incomplete against the expected output.</td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>0.80</td><td>reason: The output is a single sentence with no preamble or filler. It states the main point: the UK&#39;s Arab Partnership supports reform and economic growth in the focus countries. It covers the key facts in the expected output, naming Egypt, Tunisia, Jordan, Morocco and Libya and covering reform and economic growth, and it reflects the &#39;at their request&#39; detail as &#39;requested&#39;. It also adds the £110 million funding and international coordination for stability, both of which the source supports. It says &#39;requested political reform&#39;, which slightly misattributes the request, since countries request support for their own plans. It also omits the &#39;expertise&#39; element of the support. Overall it is accurate and fairly complete, with only minor wording imprecision.</td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>0.60</td><td>reason: The output is a single sentence with no preamble, and it captures the main point: the fund backs inclusive institutions and stability in MENA. It also adds accurate detail on the 2015-16 target countries (Algeria, Tunisia, Morocco, Mauritania) and the closed bidding windows. It never says the fund is UK government-backed, which is a key fact in the expected output. It also frames the fund as supporting &#39;stability&#39; without mentioning tackling conflict or reform. &#39;Backs inclusive institutions&#39; covers only part of the aim of building legitimate, inclusive institutions. Mauritania is listed as a full target, though the source gives it only some funding. The closing &#39;though all listed bidding windows are closed&#39; is accurate but goes beyond the core point. Overall it is accurate but incomplete on the UK-government and conflict elements.</td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>0.40</td><td>reason: The output is a single sentence with no preamble or filler, and it accurately states the main point: councils must investigate artificial light that substantially interferes with property use or risks health, assess it, and require it to stop or be restricted if it is a statutory nuisance. Every claim is supported by the source. However, it omits all three key facts in the expected output: the common causes (security lights, sports facilities, decorative lighting, laser shows), the exempt premises (airports, harbours, railways, prisons, defence premises), and the specific assessment factors (frequency, duration, timing, location, average person). It mentions assessment only vaguely as &#39;assess its circumstances&#39;. It is accurate but incomplete, so the score is limited.</td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>0.80</td><td>reason: The output is a single sentence with no preamble or filler. It captures the main point: HMRC assesses unpaid or incorrectly declared Air Passenger Duty, charges interest and penalties, and allows appeals. It covers all three elements of the expected output (assessments, penalties, interest). Every claim is supported by the source: the extended time limit for dishonesty, and the ability to appeal penalties, request an independent review or go to tribunal. Minor shortcomings: the &#39;why&#39; behind assessments (missing or inaccurate returns, no records) is only loosely conveyed by &#39;unpaid or incorrectly declared&#39;. The sentence is also somewhat dense and spends space on the appeal and time-limit details, which the expected output does not emphasise.</td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>0.80</td><td>reason: The output is a single sentence with no preamble or filler. It captures the main point: HMRC warns that phoenixism schemes cannot avoid Income Tax on winding-up distributions. It also covers the expected output&#39;s key fact about schemes trying to avoid Income Tax on distributions when a company is wound up. The claims about declaring income and expecting possible penalties are supported by the source. Two small weaknesses: &#39;settle unpaid tax&#39; is a slight paraphrase, since the source says to settle with HMRC if time limits have passed. The summary also leaves out the TAAR and GAAR legislation and describes the schemes as &#39;phoenixism&#39; without explaining that they try to obtain Capital Gains Tax treatment. It is slightly more advisory than the expected descriptive output, but it is accurate and reasonably complete.</td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>0.50</td><td>reason: The output is a single sentence with no preamble or filler, and every claim in it is supported by the source: check exam times and permitted equipment, keep phones and smartwatches out, and report suspected leaks. It misses the main point and key facts in the expected output. It does not say the text is guidance aimed at students, parents and schools, and it does not mention that breaking the rules can cost marks or lead to disqualification. It also gives only a partial list of the rules, leaving out the advice on not sharing exam questions, the calculator restrictions and the water bottle label. So it is accurate but incomplete.</td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>0.80</td><td>reason: The actual output is a single sentence with no preamble or filler. It states the main point: non-compliant beef or veal must be withdrawn until correctly labelled or processed outside the scheme, and breaches can lead to advice, warnings, notices or prosecution. Every claim is supported by the source, with no unsupported additions. It matches the expected output&#39;s focus on the consequences of breaking compulsory beef labelling rules. It omits who enforces the rules (the Rural Payments Agency or local authority) and the &#39;send, not sell&#39; direct-to-processing detail. The expected output is vague, so these gaps are minor. The sentence is also dense and slightly long.</td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>0.60</td><td>reason: The output is a single sentence with no preamble or filler. It captures the main point: Ofsted inspects children&#39;s social care, inspections can happen at any time, notice varies by service, inspections assess practice and safety, and reports are published within deadlines. These claims are supported by the source. It is slightly inaccurate in saying Ofsted &#39;registers and inspects specified&#39; services, because some services are inspected without being registered, so this blurs the distinction. The grammar is awkward. It also misses the key facts in the expected output, namely the types of services covered (local authority children&#39;s services, adoption and fostering agencies, residential centres), and it does not mention the complaints process. Overall it is accurate and concise but incomplete against the expected coverage.</td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>bertscore.precision: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>0.83</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>0.84</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>0.85</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.85</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>0.84</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>0.85</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>0.84</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>bertscore.recall: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>0.91</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.91</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>0.90</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>0.90</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>0.91</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>0.92</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.90</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>0.92</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>0.90</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>0.91</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>0.91</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>0.85</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>0.87</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>bertscore.f1: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>0.85</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>0.91</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>0.85</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>0.88</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>0.89</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>0.86</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>0.87</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>0.85</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>rouge.rougeL: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>0.13</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>0.10</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>0.07</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>0.19</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>0.30</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.32</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>0.12</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>0.27</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>0.11</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>0.16</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>0.10</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.29</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>0.33</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>0.10</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>0.17</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>0.14</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>0.26</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>0.09</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>0.05</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>0.25</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+</section>
+
+<section>
+<h2>Operational</h2>
+<p class="muted">Measured with concurrency 4, run started 2026-11-11T09:48:38.896809+00:00. Latency depends on load and region, so compare it between runs made close together.</p>
+<p class="muted">Output tokens include any hidden reasoning tokens a model reports, so throughput is not comparable between a reasoning model and one that does not reason.</p>
+<div class="wrap"><table>
+<tr><th>Metric</th><th>Result</th><th>Interval</th><th>Direction</th></tr>
+
+
+<tr><td>latency.latency_p50_s</td>
+<td><span class="headline">1.77 ±0.12 on n=200</span></td>
+<td>95% CI 1.67 to 1.92</td>
+<td>lower is better</td></tr>
+
+
+
+<tr><td>latency.latency_p95_s</td>
+<td><span class="headline">3.80 ±0.76 on n=200</span></td>
+<td>95% CI 2.90 to 4.42</td>
+<td>lower is better</td></tr>
+
+
+
+<tr><td>latency.ttft_p50_s</td>
+<td><span class="headline">1.53 ±0.13 on n=200</span></td>
+<td>95% CI 1.39 to 1.66</td>
+<td>lower is better</td></tr>
+
+
+
+<tr><td>latency.ttft_p95_s</td>
+<td><span class="headline">3.50 ±0.82 on n=200</span></td>
+<td>95% CI 2.55 to 4.20</td>
+<td>lower is better</td></tr>
+
+
+
+<tr><td>latency.throughput_tokens_per_s</td>
+<td><span class="headline">626.44 ±93.44 on n=200</span></td>
+<td>95% CI 542.57 to 729.45</td>
+<td>higher is better</td></tr>
+
+
+
+<tr><td>cost.cost_per_prediction_usd</td>
+<td><span class="headline">0.00014 ±9.3e-06 on n=200</span></td>
+<td>95% CI 0.00014 to 0.00015</td>
+<td>lower is better</td></tr>
+
+
+</table></div>
+
+
+
+
+<details><summary>latency.latency_p50_s: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>4.92</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>3.57</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>2.87</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>2.14</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>1.38</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>1.07</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>5.24</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>2.19</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>1.49</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>3.96</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>1.38</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>1.25</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>1.92</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>4.20</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>1.94</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>2.46</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>1.52</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>1.34</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>2.29</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>3.24</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>latency.latency_p95_s: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>4.92</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>3.57</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>2.87</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>2.14</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>1.38</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>1.07</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>5.24</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>2.19</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>1.49</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>3.96</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>1.38</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>1.25</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>1.92</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>4.20</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>1.94</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>2.46</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>1.52</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>1.34</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>2.29</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>3.24</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>latency.ttft_p50_s: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>4.54</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>3.34</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>2.41</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>1.84</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>1.07</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.72</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>5.12</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>1.94</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>1.09</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>3.73</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>1.04</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.77</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>1.82</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>3.73</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>1.43</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>2.04</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>1.12</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>1.13</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>2.09</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>2.96</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>latency.ttft_p95_s: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>4.54</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>3.34</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>2.41</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>1.84</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>1.07</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>0.72</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>5.12</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>1.94</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>1.09</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>3.73</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>1.04</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>0.77</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>1.82</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>3.73</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>1.43</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>2.04</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>1.12</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>1.13</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>2.09</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>2.96</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>latency.throughput_tokens_per_s: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>205.15</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>1150.02</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>192.03</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>137.86</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>203.92</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>115.39</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>6787.05</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>737.71</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>188.89</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>1743.09</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>215.66</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>79.48</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>2872.78</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>903.94</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>160.90</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>464.80</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>229.30</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>360.96</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>844.95</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>1123.21</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+
+
+
+<details><summary>cost.cost_per_prediction_usd: items</summary>
+<p class="muted">Showing 20 of 200 items</p>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Value</th><th>Detail</th></tr>
+
+<tr class="item"><td>a3-hindhead-tunnel-advice-for-drivers</td><td>0.00011</td><td></td></tr>
+
+<tr class="item"><td>about-national-geological-screening-ngs</td><td>0.00016</td><td></td></tr>
+
+<tr class="item"><td>accessibility-statement-for-govukodp</td><td>9.8e-05</td><td></td></tr>
+
+<tr class="item"><td>advice-and-support-for-lgbt-people</td><td>7.3e-05</td><td></td></tr>
+
+<tr class="item"><td>agents-self-assessment-and-paye-letter-headings</td><td>7.5e-05</td><td></td></tr>
+
+<tr class="item"><td>aggregates-working-parties-annual-reports</td><td>9.4e-05</td><td></td></tr>
+
+<tr class="item"><td>alcohol-at-charity-meetings-and-events</td><td>0.00032</td><td></td></tr>
+
+<tr class="item"><td>animal-poisoning-inspection</td><td>0.00011</td><td></td></tr>
+
+<tr class="item"><td>appeal-to-the-special-immigration-appeals-commission</td><td>0.0001</td><td></td></tr>
+
+<tr class="item"><td>apply-for-brown-tourist-signs-on-roads-the-highways-agency-manage</td><td>0.00032</td><td></td></tr>
+
+<tr class="item"><td>applying-for-an-sia-licence-if-you-have-changed-your-gender</td><td>6.1e-05</td><td></td></tr>
+
+<tr class="item"><td>apprenticeship-opportunities-in-the-ministry-of-defence</td><td>7.7e-05</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership</td><td>0.00014</td><td></td></tr>
+
+<tr class="item"><td>arab-partnership-participation-fund</td><td>0.00022</td><td></td></tr>
+
+<tr class="item"><td>artificial-light-nuisances-how-councils-deal-with-complaints</td><td>9.2e-05</td><td></td></tr>
+
+<tr class="item"><td>assessments-penalties-and-appeals-for-air-passenger-duty</td><td>0.00016</td><td></td></tr>
+
+<tr class="item"><td>attempts-to-avoid-an-income-tax-charge-when-a-company-is-wound-up-spotlight-47</td><td>0.00011</td><td></td></tr>
+
+<tr class="item"><td>be-exam-smart</td><td>0.00011</td><td></td></tr>
+
+<tr class="item"><td>beef-and-veal-labelling-what-happens-if-you-dont-comply</td><td>0.00011</td><td></td></tr>
+
+<tr class="item"><td>being-inspected-as-a-provider-of-childrens-social-care</td><td>0.0002</td><td></td></tr>
+
+</table></div>
+</details>
+
+
+</section>
+
+
+
+<section>
+<h2>Judge agreement</h2>
+
+
+<h3>Judge vs human labels</h3>
+<p><span class="headline">-0.01 ±0.37 on n=15</span> weighted kappa · 95% CI -0.31 to 0.43</p>
+<p class="flag">Note: fewer than 30 items, so treat this interval with caution</p>
+
+<h3>Judge vs reviewed labels</h3>
+<p><span class="headline">0.39 ±0.32 on n=35</span> weighted kappa · 95% CI -0.0012 to 0.65 · 0 changed in review</p>
+
+
+<h3>AI drafts vs human labels</h3>
+<p><span class="headline">-0.23 ±0.41 on n=15</span> weighted kappa · 95% CI -0.52 to 0.30</p>
+<p class="flag">Note: fewer than 30 items, so treat this interval with caution</p>
+
+<p class="muted">Each result uses different labels and is shown separately. Reviewed labels were drafted by AI, so they are not independent human judgement.</p>
+</section>
+
+
+
+<section>
+<h2>Rubric: summary_quality</h2>
+<p class="muted">Judge anthropic/claude-sonnet-5-5 · rubric hash 06cb79161c75498034bcd4d20c6d99fab6d5cb86c7227efc88ba984687c3309c</p>
+<pre>name: summary_quality
+version: 1
+description: Judges how well a one-sentence summary captures a GOV.UK guidance page.
+fields: [input, actual_output, expected_output]
+steps:
+  - Check that the actual output states the main point of the source text in the input.
+  - Penalise any claim in the actual output that the source text does not support.
+  - Check that the actual output covers the key facts in the expected output.
+  - The task asks for one sentence. Penalise more than one sentence, preamble or filler.
+  - Give a higher score only when the summary is both accurate and complete.
+</pre>
+</section>
+
+
+<section>
+<h2>Non-default settings</h2>
+<ul><li>summary_quality: rubric = rubrics/summary_quality.yaml</li></ul>
+
+</section>
+<p class="muted">evalverdict 0.1.0 · dataset hash 42ee63f300e118a33570f1f6108a8a8afadd64d62f7d836399640b4e4ee5c403 · commit c5ab21b51fd1925846ea3bc4a34865aaa57214e5</p>
+</main>
+</body>
+</html>
