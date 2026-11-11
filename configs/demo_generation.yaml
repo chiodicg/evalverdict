@@ -28,3 +28,4 @@ gates:
   summary_quality.score: {min: 0.75, primary: true}
   bertscore.f1: {min: 0.70}
   latency.ttft_p95_s: {max: 2.0}
+labels: {path: labels/labels.jsonl, judge_scorer: summary_quality}
