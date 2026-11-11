@@ -326,6 +326,22 @@ def test_judge_call_error_is_raised_to_the_scorer(tmp_path: Path) -> None:
         client.complete("prompt")
 
 
+class Failing:
+    def complete(self, prompt: str) -> str:
+        raise JudgeCallError("RateLimitError")
+
+
+def test_judge_failure_records_the_error_type_for_each_item() -> None:
+    scorer = scorer_with(Failing())
+
+    values = scorer.item_values(OUTPUTS, REFERENCES, CASES)
+
+    assert values.details[0] == {
+        "judge_failure": "JudgeCallError",
+        "judge_error": "RateLimitError",
+    }
+
+
 def test_paid_judge_needs_a_budget(workspace: Path) -> None:
     config = run_config(workspace, {"model": "anthropic/claude-sonnet-5-5"})
 

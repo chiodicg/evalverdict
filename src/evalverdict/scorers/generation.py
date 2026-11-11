@@ -197,6 +197,9 @@ class JudgeScorer(Scorer):
             elif isinstance(error, (JudgeCallError, JudgeParseError, StalledError)):
                 failed += 1
                 details[index] = {"judge_failure": type(error).__name__}
+                if isinstance(error, JudgeCallError):
+                    # Targets keep only the provider error's type name, never its message.
+                    details[index]["judge_error"] = str(error)
             elif error is not None:
                 raise error
         self._health = ScorerHealth(failed, len(predictions), stop_reason)

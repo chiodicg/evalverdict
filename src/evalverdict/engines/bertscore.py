@@ -58,14 +58,19 @@ def compute_bertscore(
         index for index in range(total) if predictions[index].strip() and references[index].strip()
     ]
     scores = np.zeros((3, total))
-    if filled:
+    # bert_score orders sentences through a set, so which sentences share a batch, and
+    # their padding, would change with Python's hash seed and move scores in the 7th
+    # decimal. Sending at most one batch per call keeps reruns identical.
+    pairs_per_call = max(1, batch_size // 2)
+    for start in range(0, len(filled), pairs_per_call):
+        chunk = filled[start : start + pairs_per_call]
         computed = _run_backend(
-            [predictions[index] for index in filled],
-            [references[index] for index in filled],
+            [predictions[index] for index in chunk],
+            [references[index] for index in chunk],
             model_type,
-            batch_size,
+            2 * pairs_per_call,
             backend,
         )
         for row, values in enumerate(computed):
-            scores[row, filled] = values
+            scores[row, chunk] = values
     return scores[0], scores[1], scores[2]
